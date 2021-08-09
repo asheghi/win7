@@ -2,6 +2,7 @@ import { reactive } from 'vue';
 import UnknownIcon from '../assets/icons/unknown.png';
 import {
   resolveFileSource, resolveFileRunner, getFileWindowProperties, getPathName, fileObject,
+  fetchApp,
 } from './fs';
 
 export const state = reactive({
@@ -60,10 +61,12 @@ export const windows = reactive({
 
 let latestZIndex = 20;
 
-export const calculateFileWindowProperties = (_theFile) => {
-  const theFile = resolveFileSource(_theFile);
-  const windowProperties = getFileWindowProperties(theFile) || {};
+export const calculateFileWindowProperties = async (_theFile) => {
+  const theFile = await resolveFileSource(_theFile);
+  await fetchApp(theFile)
+  const windowProperties = await getFileWindowProperties(theFile);
   const getOr = (value, defaultvalue) => (typeof value === 'undefined' ? defaultvalue : value);
+
   const width = getOr(windowProperties.width, 400);
   const height = getOr(windowProperties.height, 400);
   const hidden = getOr(windowProperties.hidden, false);
@@ -89,17 +92,26 @@ export const calculateFileWindowProperties = (_theFile) => {
   };
 };
 
-export const openFile = (_theFile) => {
-  const theFile = resolveFileSource(_theFile);
-  const runner = resolveFileRunner(theFile);
-  const windowProperties = calculateFileWindowProperties(theFile);
+export const openFile = async (_theFile) => {
+  if (!_theFile){
+    console.error('bad argument');
+    return;
+  }
+  const theFile = await resolveFileSource(_theFile);
+  await fetchApp(theFile);
+  const runner = await resolveFileRunner(theFile);
+  if (!runner) {
+    throw new Error('cound not find a runner');
+    return;
+  }
+  const windowProperties = await calculateFileWindowProperties(theFile);
   const id = `w-${Date.now()}-${Math.random()}`;
   const win = {
     id,
     ...windowProperties,
     fsData: Object.freeze({
       runner,
-      file: runner.path !== theFile.path ? theFile : null,
+      file: theFile,
     }),
   };
 

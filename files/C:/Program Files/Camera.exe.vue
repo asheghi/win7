@@ -15,13 +15,13 @@
       </span>
     </template>
     <template v-else>
-      <img :src="file.data.value">
+      <img :src="file.module">
     </template>
   </div>
 </template>
 
 <script>
-import NotifSound from '../../../src/assets/sounds/notif.wav';
+const NotifSound = 'C:/Windows/sounds/notif.wav';
 import icon from '../../../src/assets/icons/camera.png';
 import fileIcon from '../../../src/assets/icons/jpg.png';
 import { props, inject } from '../../../src/utils/vue';

@@ -31,7 +31,7 @@ export default {
   }),
   data() {
     return {
-      value: this.file ? this.file.data.value : '',
+      value: this.file && this.file.type !== 'app' ? this.file.module : '',
     };
   },
   mounted() {
@@ -42,8 +42,8 @@ export default {
       this.$wm.closeWindow(this.wmId);
     },
     save() {
-      if (this.file) {
-        this.file.data.value = this.value;
+      if (this.file && this.file.type !== 'app') {
+        this.file.module = this.value;
         this.$wm.openDialog({
           type: 'info',
           content: 'File Saved!',
@@ -52,9 +52,9 @@ export default {
       } else {
         const fileName = `Text File ${Date.now()}.txt`;
         const filePath = `C:/User/Documents/${fileName}`;
-        this.$fs.createNewFile(this.$fs.fileObject(filePath, 'text', {
-          value: this.value,
-        }));
+        let theFile = this.$fs.fileObject(filePath, 'text');
+        theFile.module = this.value;
+        this.$fs.createNewFile(theFile);
         this.$fs.createNewFile(this.$fs.fileObject(`C:/User/Desktop/${fileName}`, 'shortcut', {
           src: filePath,
         }));

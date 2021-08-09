@@ -52,13 +52,18 @@
         </div>
       </div>
     </div>
-    <component
-      :is="window.fsData.runner.data.component"
+    <RenderRunner
+      :window="window"
+      ref="content"
+      :class="$style.content"
+    />
+<!--    <component
+      :is="window.fsData.runner"
       ref="content"
       :class="$style.content"
       :file="window.fsData.file"
       :wm-id="window.id"
-    />
+    />-->
   </div>
 </template>
 
@@ -72,8 +77,10 @@ import MaximizeIcon from '../assets/window/maximize.png';
 import UnmaximizeIcon from '../assets/window/unmaximize.png';
 import MinimizeIcon from '../assets/window/minimize.png';
 import CloseIcon from '../assets/window/close.png';
+import RenderRunner from './RenderRunner.vue';
 
 export default {
+  components: { RenderRunner },
   ...props({
     window: props.obj(),
   }),

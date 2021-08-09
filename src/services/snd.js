@@ -2,8 +2,7 @@
 import { openFile } from './wm';
 import { fileObject } from './fs';
 
-export const playSound = (soundSrc) => new Promise((resolve) => openFile(fileObject('', 'sound', {
+export const playSound = (soundSrc) => new Promise((resolve) => openFile(fileObject(soundSrc, 'sound', {
   hidden: true,
-  value: soundSrc,
   onEnd: resolve,
 })));

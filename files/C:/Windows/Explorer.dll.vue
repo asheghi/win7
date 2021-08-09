@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import NavigateSound from '../../../src/assets/sounds/navigate.wav';
+const NavigateSound = 'C:/Windows/sounds/navigate.wav';
 import icon from '../../../src/assets/icons/my-computer.png';
 import folderIcon from '../../../src/assets/icons/folder.png';
 import driveIcon from '../../../src/assets/icons/drive.png';
@@ -59,15 +59,17 @@ export default {
     FilesContainer,
   },
   data() {
-    const hasFile = this.file && this.file.path;
+    const hasFile = this.file && this.file.path && !this.file.path.endsWith('.dll');
+
     return {
       path: hasFile ? this.file.path : '',
-      search: hasFile ? this.file.data.search : '',
+      search: hasFile && this.file.module ? this.file.module.search  : '',
     };
   },
   computed: {
     pathBar() {
-      return this.path.split('/').join('\\') || 'Computer';
+      return this.path.split('/')
+        .join('\\') || 'Computer';
     },
     searchPlaceholder() {
       return `Search in ${this.$fs.getPathName(this.path) || 'Computer'}`;
@@ -78,7 +80,9 @@ export default {
           files: this.$fs.searchFiles(
             this.path,
             (file) => this.$fs
-              .getPathName(file.path).toLowerCase().includes(this.search.toLowerCase()),
+              .getPathName(file.path)
+              .toLowerCase()
+              .includes(this.search.toLowerCase()),
             true,
           ),
         };
@@ -89,8 +93,8 @@ export default {
     },
   },
   methods: {
-    click(file) {
-      const theFile = this.$fs.resolveFileSource(file);
+    async click(file) {
+      const theFile = await this.$fs.resolveFileSource(file);
       if (theFile.type === 'directory') {
         this.$snd.playSound(NavigateSound);
         this.path = theFile.path;

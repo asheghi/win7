@@ -25,8 +25,8 @@ import ErrorIcon from '../../../src/assets/icons/error.png';
 import InfoIcon from '../../../src/assets/icons/info.png';
 import WarningIcon from '../../../src/assets/icons/warning.png';
 import QuestionIcon from '../../../src/assets/icons/question.png';
-import ErrorSound from '../../../src/assets/sounds/error.wav';
-import DingSound from '../../../src/assets/sounds/ding.wav';
+const ErrorSound = 'C:/Windows/sounds/error.wav';
+const DingSound = 'C:/Windows/sounds/ding.wav';
 import { props, inject } from '../../../src/utils/vue';
 import { rgba } from '../../../src/styles/utils';
 

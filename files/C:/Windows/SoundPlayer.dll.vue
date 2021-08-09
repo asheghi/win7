@@ -6,7 +6,8 @@
     class="no-border"
     @ended="onEnd"
   >
-    <source :src="soundData.value">
+    {{soundData}}
+    <source :src="soundData">
   </audio>
 </template>
 
@@ -18,7 +19,7 @@ export default {
   canHandle: (file) => file.type === 'sound',
   windowProperties: (file) => ({
     icon,
-    hidden: file ? file.data.hidden : false,
+    hidden: file && file.extras ? file.extras.hidden : false,
     height: 100,
     resizable: false,
     maximizable: false,
@@ -29,15 +30,15 @@ export default {
   }),
   computed: {
     soundData() {
-      return this.file ? this.file.data : {};
+      return this.file ? this.file.module : {};
     },
   },
   methods: {
     onEnd() {
-      if (typeof this.soundData.onEnd === 'function') {
-        this.soundData.onEnd();
-      }
-      if (this.file.data.hidden) {
+      if (typeof this.file.extras.onEnd === 'function') {
+        this.file.extras.onEnd();
+      };
+      if (this.file.extras.hidden) {
         this.$nextTick(() => {
           this.$wm.closeWindow(this.wmId);
         });

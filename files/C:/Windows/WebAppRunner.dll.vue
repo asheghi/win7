@@ -3,7 +3,7 @@
     :class="$style.webAppRunner"
     class="no-border"
   >
-    <iframe :src="file.data.url" />
+    <iframe :src="file.module[1].url" />
   </div>
 </template>
 
@@ -13,11 +13,16 @@ import { rgba } from '../../../src/styles/utils';
 import { props } from '../../../src/utils/vue';
 
 export default {
-  canHandle: (file) => file.type === 'webapp',
+  canHandle: (file) => {
+    if (file.module && file.module[0] && file.module[0] === 'webapp') {
+      return true;
+    }
+    return file.type === 'webapp';
+  },
   windowProperties: (file) => ({
-    icon: file && file.data.icon ? file.data.icon : icon,
-    width: file && file.data.width ? file.data.width : 600,
-    height: file && file.data.height ? file.data.height : 500,
+    icon: file && file.module[1].icon ? file.module[1].icon : icon,
+    width: file && file.module[1].width ? file.module[1].width : 600,
+    height: file && file.module[1].height ? file.module[1].height : 500,
   }),
   ...props({
     file: props.obj(null),

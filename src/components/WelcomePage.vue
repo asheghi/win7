@@ -16,7 +16,8 @@
 import { inject } from '../utils/vue';
 import { rgba } from '../styles/utils';
 import LoginWallpaper from '../assets/login.png';
-import StartupSound from '../assets/sounds/startup.wav';
+
+const StartupSoundSrc = 'C:/Windows/sounds/startup.wav';
 
 export default {
   ...inject('$wm', '$snd'),
@@ -24,6 +25,9 @@ export default {
     isFullScreen() {
       return !!window.document.fullscreenElement;
     },
+  },
+  mounted() {
+    this.start();
   },
   methods: {
     requestFullscreen() {
@@ -37,7 +41,7 @@ export default {
     },
     start() {
       this.$wm.startWindowManager();
-      this.$snd.playSound(StartupSound);
+      this.$snd.playSound(StartupSoundSrc);
     },
     startFullscreen() {
       this.requestFullscreen();

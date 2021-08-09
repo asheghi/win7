@@ -64,12 +64,16 @@ export default {
     return {
       selected: false,
       renaming: false,
+      icon:false,
     };
   },
+  mounted() {
+    this.$wm.calculateFileWindowProperties(this.file)
+    .then(async res => {
+      this.icon = res.icon;
+    })
+  },
   computed: {
-    icon() {
-      return this.$wm.calculateFileWindowProperties(this.file).icon;
-    },
     shortcutIcon() {
       return this.file.type === 'shortcut' ? ShortcutIcon : '';
     },
@@ -101,10 +105,10 @@ export default {
         }
       }
     },
-    click(e) {
+    async click(e) {
       this.select();
       if (e && e.type === 'click' && !this.singleClick) return;
-      if (this.onClick && this.onClick(this.file) === true) {
+      if (this.onClick && await this.onClick(this.file) === true) {
         return;
       }
       this.$wm.openFile(this.file);
