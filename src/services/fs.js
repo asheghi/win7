@@ -28,7 +28,6 @@ export function fetchApp(app, { raw = false } = {}) {
   try {
     return import('../../files/' + path + (raw ? '?raw' : ''))
       .then(m => {
-        //console.log('done with fetching ', app);
         insertModuleToFiles(app, m);
       });
   } catch (e) {
