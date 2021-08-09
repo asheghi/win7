@@ -1,9 +1,59 @@
 import { markRaw, reactive } from 'vue';
 
-export const fileObject = (path, type, data = {}) => ({
+function insertModuleToFiles(app, module) {
+  const file = resolveFileByPath(app.path) || app;
+  file.fetching = false;
+  file.module = module.default || module;
+  if (module && module[0] === 'webapp') {
+    file.type = 'webapp';
+  }
+}
+
+export function fetchApp(app, { raw = false } = {}) {
+  if (app.type === 'directory') {
+    return;
+  }
+  if (app.module) {
+    return;
+  }
+  let path = app.path;
+  if (app.type === 'app') {
+    path += '.vue';
+  }
+
+  if(['text'].includes(app.type)){
+    raw = true;
+  }
+
+  try {
+    return import('../../files/' + path + (raw ? '?raw' : ''))
+      .then(m => {
+        //console.log('done with fetching ', app);
+        insertModuleToFiles(app, m);
+      });
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+export function fetchApps() {
+  const apps = [
+    ...getDirectoryFiles('C:/Windows'),
+    ...getDirectoryFiles('C:/Program Files'),
+  ];
+  apps
+    .forEach(app => {
+      fetchApp(app);
+    });
+}
+
+export const fileObject = (path, type, ...rest) => ({
   path,
   type,
-  data: markRaw(data),
+  module: null,
+  fetching: false,
+  fetch_error: null,
+  extras: rest[0],
 });
 
 export const files = reactive({
@@ -24,14 +74,16 @@ export const getPathDir = (path) => {
   return parsedPath.join('/');
 };
 
-export const getDirectoryFiles = (path, recursive = false) => files.list.filter(
-  (fileItem) => {
-    if (recursive) {
-      return path ? fileItem.path.startsWith(`${path}/`) : true;
-    }
-    return getPathDir(fileItem.path) === path;
-  },
-);
+export function getDirectoryFiles(path, recursive = false) {
+  return files.list.filter(
+    (fileItem) => {
+      if (recursive) {
+        return path ? fileItem.path.startsWith(`${path}/`) : true;
+      }
+      return getPathDir(fileItem.path) === path;
+    },
+  );
+}
 
 export const isPathExists = (path) => {
   for (let i = files.list.length - 1; i >= 0; i -= 1) {
@@ -68,32 +120,43 @@ export const createNewFolder = (basePath) => {
 
 export const resolveFileByPath = (path) => files.list.find((fileItem) => fileItem.path === path);
 
-export const resolveFileSource = (theFile) => {
-  if (!theFile) {
-    throw new Error(`Cannot resolve ${theFile}`);
+export const resolveFileSource = async (arg) => {
+ if (!arg) {
+    throw new Error(`Cannot resolve ${arg}`);
   }
-  if (theFile.type === 'shortcut') {
-    return resolveFileSource(resolveFileByPath(theFile.data.src));
+  if (arg.type === 'shortcut') {
+    await fetchApp(arg, { raw: true });
+    let path = arg.module.trim();
+    if (path.endsWith('.vue')) {
+      path = path.substring(0, path.indexOf('.vue'));
+    }
+    let file = resolveFileByPath(path);
+    return resolveFileSource(file);
   }
-  return theFile;
+  return arg;
 };
 
-export const resolveFileRunner = (_thefile) => {
-  const theFile = resolveFileSource(_thefile);
+export const resolveFileRunner = async (_thefile) => {
+  const theFile = await resolveFileSource(_thefile);
   if (theFile.type === 'app') {
-    return theFile;
+    return theFile.module;
   }
+
   const apps = [
     ...getDirectoryFiles('C:/Windows'),
     ...getDirectoryFiles('C:/Program Files'),
   ];
-  const runner = apps.find((app) => {
-    if (app.data.component && typeof app.data.component.canHandle === 'function' && app.data.component.canHandle(theFile)) {
-      return true;
+
+  for (const app of apps) {
+    if (!app.module) {
+      await fetchApp(app);
     }
-    return false;
-  });
-  return runner;
+    if (app.module && typeof app.module.canHandle === 'function' && app.module.canHandle(theFile)) {
+      return app.module;
+    }
+  }
+
+  return null;
 };
 
 export const isPathsRelated = (pathBase, pathCheck) => pathBase === pathCheck
@@ -154,12 +217,16 @@ export const copyFileByPath = (pathFrom, pathTo) => {
 export const searchFiles = (basePath, matcher, recursive = true) => getDirectoryFiles(
   basePath,
   recursive,
-).filter(matcher);
+)
+  .filter(matcher);
 
-export const getFileWindowProperties = (_theFile) => {
-  const theFile = resolveFileSource(_theFile);
-  const runner = resolveFileRunner(theFile);
+export const getFileWindowProperties = async (_theFile) => {
+  const theFile = await resolveFileSource(_theFile);
+  const runner = await resolveFileRunner(theFile);
   const isNotApp = theFile.type !== 'app';
-  const ret = runner && runner.data && runner.data.component && typeof runner.data.component.windowProperties === 'function' ? runner.data.component.windowProperties(isNotApp && theFile) : {};
+  const ret = runner && typeof runner.windowProperties === 'function' ? runner.windowProperties(isNotApp && theFile) : {};
+  if (theFile.type === 'json') {
+    ret.icon = theFile.module && theFile.module[1] && theFile.module[1].icon;
+  }
   return ret;
 };
