@@ -46,6 +46,9 @@ export async function readDirectory(path) {
       if (e) {
         return reject(e);
       }
+      if (!path.startsWith('/')){
+        path = '/' + path;
+      }
       data = data.map(it => join(path, it));
       resolve(data);
     });

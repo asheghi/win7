@@ -10,6 +10,7 @@ import mediaPlayerIcon from '../assets/icons/mp3.png?url';
 import driveIcon from '../assets/icons/drive.png?url';
 import folderIcon from '../assets/icons/folder.png?url';
 import icon from '../assets/icons/background-capplet.png';
+import photoViewer from '../assets/icons/jpg.png';
 
 export default {
   'Explorer': {
@@ -69,7 +70,7 @@ export default {
     },
   },
   'Camera': {
-    canHandle: ({ fileType }) => fileType === 'image',
+    canHandle: ({ fileType }) => false,
     windowProperties: (file) => ({
       icon: file ? fileIcon : cameraIcon,
       width: 600,
@@ -85,6 +86,17 @@ export default {
       width: 900,
       height: 490,
       maximizable: false,
+      isSystemApp: true,
+    }),
+  },
+  'PhotoViewer':{
+    canHandle:({ fileType }) => fileType === 'image',
+    windowProperties: () => ({
+      title: 'Photo Viewer',
+      icon:photoViewer,
+      width: 900,
+      height: 700,
+      maximizable: true,
       isSystemApp: true,
     }),
   }
