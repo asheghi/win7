@@ -57,7 +57,7 @@
             <img width="24" :src="IconRotateRight" alt="">
           </div>
           <div class="divider"></div>
-          <div class="delete">
+          <div @click="showDeleteDialog" class="delete">
             <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
               <linearGradient id="hbE9Evnj3wAjjA2RX0We2a" x1="7.534" x2="27.557" y1="7.534" y2="27.557"
                               gradientUnits="userSpaceOnUse"
@@ -88,7 +88,7 @@
 </template>
 
 <script>
-import { escapeShortcut, fetchFile, readDirectory, writeBuffer } from '../../services/fs';
+import { deleteFile, escapeShortcut, fetchFile, readDirectory, writeBuffer } from '../../services/fs';
 import { encode } from '../../utils/utils';
 import { getFileType } from '../../services/apps';
 import { dirname, basename } from 'path-browserify';
@@ -98,11 +98,14 @@ import IconImage from '../../assets/icons/jpg.png';
 import IconRotateLeft from '../../assets/icons/object-rotate-left.png';
 import IconRotateRight from '../../assets/icons/object-rotate-right.png';
 import  Image from 'image-js';
+import { closeWindow, openDialog } from '../../services/wm';
+import IconRecycleBin from '../../assets/icons/trashcan_full.png';
 
 export default {
   name: 'PhotoViewer',
   props: {
     filePath: {},
+    wmId:{},
   },
   mounted() {
     this.fetchImageFile();
@@ -172,6 +175,31 @@ export default {
       const rotated = image.rotate(-90).toBuffer()
       await writeBuffer(this.currentFile, rotated);
       await this.fetchImageFile()
+    },
+    showDeleteDialog(image) {
+      //todo implement recycle bin
+      openDialog({
+        title:"Delete File",
+        content:"Are you sure you want to delete this file?",
+        buttons:['Yes','No'],
+        onClick:(btn) => {
+          if (btn === 'Yes') {
+            this.deleteImage();
+          }
+        },
+        icon:IconRecycleBin,
+        type:'delete'
+      })
+    },
+    async deleteImage() {
+      await deleteFile(this.currentFile);
+      if (this.nextImage) {
+        this.showNext();
+      }else if (this.prevImage) {
+        this.showPrev();
+      }else{
+        closeWindow(this.wmId);
+      }
     }
   },
   computed: {
