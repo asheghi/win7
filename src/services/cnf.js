@@ -1,6 +1,5 @@
 /* eslint-disable import/prefer-default-export */
 import { reactive } from 'vue';
-import DefaultWallpaper from '../assets/images/Wallpapers/1.jpg?url';
 
 const getConfigItem = (key, defaultValue) => {
   const userValue = localStorage.getItem(`config-${key}`);
@@ -22,4 +21,4 @@ export const setConfig = (obj) => {
 };
 
 // list of config items and default values
-values.wallpaperPath = getConfigItem('wallpaperPath', DefaultWallpaper);
+values.wallpaperPath = getConfigItem('wallpaperPath', null);

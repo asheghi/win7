@@ -1,7 +1,7 @@
 <template>
   <div
     :class="$style.desktop"
-    :style="{ backgroundImage: wallpaper }"
+    ref="desktop"
   >
     <FilesContainer
       path="C:/User/Desktop"
@@ -17,6 +17,9 @@ import { fitSize } from '../styles/common';
 import { inject } from '../utils/vue';
 import { panelSize } from '../styles/constants';
 import FilesContainer from './FilesContainer.vue';
+import { fetchFile } from '../services/fs';
+import { encode } from '../utils/utils';
+import DefaultWallpaper from '../assets/images/Wallpapers/1.jpg?url';
 
 export default {
   name: 'Desktop',
@@ -36,9 +39,22 @@ export default {
       }),
     ];
   },
+  data() {
+    return {
+      wallpaper:null,
+    }
+  },
+  async mounted() {
+    this.loadWallpaper()
+  },
+  watch: {
+    ['$cnf.values.wallpaperPath'](){
+      this.loadWallpaper();
+    }
+  },
   computed: {
-    wallpaper() {
-      return `url("${this.$cnf.values.wallpaperPath}")`;
+    wallpaperFile() {
+      return this.$cnf.values.wallpaperPath
     },
     contextMenuExtras() {
       return {
@@ -50,6 +66,16 @@ export default {
     openChangeBackground() {
       this.$wm.openFile('/C:/Windows/System32/ChangeBackground.exe');
     },
+    async loadWallpaper() {
+      if (this.wallpaperFile) {
+        const file = await fetchFile(this.wallpaperFile);
+        const bytes = new Uint8Array(file);
+        const src = 'data:image/png;base64,' + encode(bytes);
+        this.$refs.desktop.style.backgroundImage = 'url("'+src+'")';
+      }else{
+        this.$refs.desktop.style.backgroundImage = 'url("'+DefaultWallpaper+'")';
+      }
+    }
   },
 };
 </script>

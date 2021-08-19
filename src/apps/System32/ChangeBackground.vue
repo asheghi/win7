@@ -66,7 +66,7 @@ export default {
   methods: {
     changeBackground(item) {
       this.$cnf.setConfig({
-        wallpaperPath: item.src,
+        wallpaperPath: item.file,
       });
     },
   },
