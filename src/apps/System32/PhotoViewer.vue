@@ -100,7 +100,7 @@
 import { deleteFile, escapeShortcut, fetchFile, readDirectory, writeBuffer } from '../../services/fs';
 import { encode } from '../../utils/utils';
 import { getFileType } from '../../services/apps';
-import { dirname, basename } from 'path-browserify';
+import { dirname, basename ,} from 'path-browserify';
 import IconZoomIn from '../../assets/icons/zoom-in.png';
 import IconZoomFit from '../../assets/icons/zoom-fit-best.png';
 import IconImage from '../../assets/icons/jpg.png';
@@ -120,6 +120,7 @@ export default {
   mounted() {
     this.fetchImageFile();
     this.fetchSiblingFiles();
+    this.updateWindowTitle();
     document.addEventListener('keydown', this.onKeyboardKeyDown);
   },
   data() {
@@ -145,7 +146,7 @@ export default {
   },
   watch: {
     currentFile(n, o) {
-      this.$wm.updateTitle(this.wmId,basename(this.currentFile));
+      this.updateWindowTitle()
       if (n && n !== o) {
         this.fetchImageFile();
       }
@@ -342,6 +343,9 @@ export default {
           this.zoom = Math.max(1, this.zoom - this.zoom / 10);
         }
       });
+    },
+    updateWindowTitle() {
+      this.$wm.updateTitle(this.wmId,basename(this.currentFile) + '  -  Windows Photo Viewer');
     }
   },
   computed: {
