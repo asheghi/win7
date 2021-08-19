@@ -5,7 +5,8 @@
         <div class="loading" v-if="loading">
           Loading ...
         </div>
-        <img v-if="!loading &&  src" :src="src" alt="" :class="mode">
+        <img ref="image" v-if="!loading &&  src" :src="src" alt="" :class="mode">
+        <div ref="canvasDiv"></div>
       </div>
     </div>
     <div class="controls">
@@ -36,7 +37,7 @@
               <img width="32" :src="IconImage" alt="">
             </div>
           </div>
-          <div class="next" @click="showNext"  :class="!nextImage ? 'disable' : ''">
+          <div class="next" @click="showNext" :class="!nextImage ? 'disable' : ''">
             <svg xmlns="http://www.w3.org/2000/svg"
                  width="24"
                  height="24"
@@ -49,10 +50,10 @@
           </div>
         </div>
         <div class="right">
-          <div class="rotate-left">
+          <div @click="rotateLeft" class="rotate-left">
             <img width="24" :src="IconRotateLeft" alt="">
           </div>
-          <div class="rotate-right">
+          <div @click="rotateRight" class="rotate-right">
             <img width="24" :src="IconRotateRight" alt="">
           </div>
           <div class="divider"></div>
@@ -87,7 +88,7 @@
 </template>
 
 <script>
-import { escapeShortcut, fetchFile, readDirectory } from '../../services/fs';
+import { escapeShortcut, fetchFile, readDirectory, writeBuffer } from '../../services/fs';
 import { encode } from '../../utils/utils';
 import { getFileType } from '../../services/apps';
 import { dirname, basename } from 'path-browserify';
@@ -96,6 +97,7 @@ import IconZoomFit from '../../assets/icons/zoom-fit-best.png';
 import IconImage from '../../assets/icons/jpg.png';
 import IconRotateLeft from '../../assets/icons/object-rotate-left.png';
 import IconRotateRight from '../../assets/icons/object-rotate-right.png';
+import  Image from 'image-js';
 
 export default {
   name: 'PhotoViewer',
@@ -120,11 +122,12 @@ export default {
       }
       if (this.currentFile.startsWith('/')) {
         this.loading = true;
+        this.src = null;
         try {
           const path = await escapeShortcut(this.currentFile);
           const type = getFileType(path);
           if (type === 'image') {
-            const buffer = await fetchFile(path);
+            const buffer = await fetchFile(path,{encode:'unit8array'});
             const bytes = new Uint8Array(buffer);
             this.src = 'data:image/png;base64,' + encode(bytes);
           }
@@ -149,10 +152,26 @@ export default {
         this.currentFile = this.nextImage;
       }
     },
-    showPrev(){
-      if(this.prevImage){
+    showPrev() {
+      if (this.prevImage) {
         this.currentFile = this.prevImage;
       }
+    },
+    async rotateRight() {
+      this.loading = true;
+      const data = await fetchFile(this.currentFile);
+      const image = await Image.load(data)
+      const rotated = image.rotate(90).toBuffer()
+      await writeBuffer(this.currentFile,rotated);
+      await this.fetchImageFile()
+    },
+    async rotateLeft() {
+      this.loading = true;
+      const data = await fetchFile(this.currentFile);
+      const image = await Image.load(data)
+      const rotated = image.rotate(-90).toBuffer()
+      await writeBuffer(this.currentFile, rotated);
+      await this.fetchImageFile()
     }
   },
   computed: {
@@ -322,6 +341,7 @@ export default {
             &:hover {
               filter: brightness(1.2);
             }
+
             img {
               width: 24px;
               height: 24px;
@@ -356,7 +376,7 @@ export default {
             );
           }
 
-          &.disable:hover{
+          &.disable:hover {
             background: linear-gradient(180deg,
               rgba(250, 255, 255, 0.4) 0%,
               rgba(241, 255, 246, 0.3) 40%,

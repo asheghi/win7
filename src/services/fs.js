@@ -46,7 +46,7 @@ export async function readDirectory(path) {
       if (e) {
         return reject(e);
       }
-      if (!path.startsWith('/')){
+      if (!path.startsWith('/')) {
         path = '/' + path;
       }
       data = data.map(it => join(path, it));
@@ -200,7 +200,7 @@ export function isDirectory(filePath) {
 }
 
 export function reverseSlash(filePath) {
-  return filePath.replaceAll('/', "\\");
+  return filePath.replaceAll('/', '\\');
 }
 
 export async function copyDirectory(srcDirectory, dstDirectory) {
@@ -376,16 +376,20 @@ async function _writeStartMenuItem() {
 
 export async function _downloadDefaultWallpapers() {
   let basePath = '/C:/Windows/Wallpapers';
-  const wallpapers = await getWallpapersList();
   await makeDirectory(basePath);
-  await Promise.all(wallpapers.map(wallpaper =>{
+
+  const wallpapers = await getWallpapersList();
+  const promises = [];
+  for (const wallpaper of wallpapers) {
     const name = basename(wallpaper);
     const file = join(basePath, name);
-    if (!existsPath()) {
-      return downloadFile(wallpaper, file);
+    const exists = await existsPath(file);
+    if (!exists) {
+      promises.push(downloadFile(wallpaper, file))
     }
-    return Promise.resolve();
-  }))
+  }
+
+  await Promise.all(promises);
 }
 
 async function populateFS() {
@@ -412,13 +416,20 @@ async function populateFS() {
 
 async function downloadFile(url, path) {
   try {
-    const Buffer =  BrowserFS.BFSRequire('buffer').Buffer;
+    const Buffer = BrowserFS.BFSRequire('buffer').Buffer;
     const res = await fetch(url);
     const data = await res.arrayBuffer();
     await new Promise(r => {
-      fs.writeFile(path, Buffer.from(data), {  }, r);
+      fs.writeFile(path, Buffer.from(data), {}, r);
     });
   } catch (e) {
     console.error(e);
   }
 };
+
+export async function writeBuffer(file, unit8array) {
+  const Buffer = BrowserFS.BFSRequire('buffer').Buffer;
+  await new Promise(r => {
+    fs.writeFile(file, new Buffer(unit8array), {}, r);
+  });
+}
