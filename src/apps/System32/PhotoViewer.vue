@@ -5,8 +5,9 @@
         <div class="loading" v-if="loading">
           Loading ...
         </div>
-        <img ref="image" v-if="!loading &&  src" :src="src" alt="" :class="mode">
-        <div ref="canvasDiv"></div>
+        <div class="image-container" :class="{realSize:realSize}">
+          <img ref="image" v-if="!loading &&  src" :src="src" alt="">
+        </div>
       </div>
     </div>
     <div class="controls">
@@ -15,7 +16,7 @@
           <div class="zoom">
             <img width="24" :src="IconZoomIn" alt="">
           </div>
-          <div class="size">
+          <div class="size" @click="switchMode">
             <img width="24" :src="IconZoomFit" alt="">
           </div>
         </div>
@@ -86,7 +87,7 @@
     </div>
     <teleport v-if="slideShowMode" to="body">
       <div class="PhotoViewer_slide-show" @click="showNext">
-        <img ref="imageSlideShow" v-if="!loading &&  src" :src="src" alt="" :class="mode">
+        <img ref="imageSlideShow" v-if="!loading &&  src" :src="src" alt="" :class="realSize">
       </div>
     </teleport>
   </div>
@@ -245,6 +246,10 @@ export default {
       if (code === 'Escape') {
         this.slideShowMode = false;
       }
+    },
+    switchMode() {
+      this.realSize = Boolean(!this.realSize);
+      this.$forceUpdate();
     }
   },
   computed: {
@@ -272,7 +277,7 @@ export default {
   data() {
     return {
       src: null,
-      mode: '',
+      realSize: null,
       currentFile: this.filePath,
       IconZoomIn,
       IconZoomFit,
@@ -300,6 +305,21 @@ export default {
     .white {
       height: 100%;
       background: white;
+    }
+
+    .image-container {
+      width: 100%;
+      height: 100%;
+
+      &.realSize {
+        overflow: scroll;
+
+        img{
+          width: unset;
+          height: unset;
+          object-fit: unset;
+        }
+      }
     }
 
     img {
