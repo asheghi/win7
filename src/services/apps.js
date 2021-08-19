@@ -21,7 +21,7 @@ export function getFileType(filePath) {
   if (['mp3', 'ogg', 'wma', 'wpl', 'mpa', 'mid', 'cda'].includes(ext)) {
     return 'audio';
   }
-  if (['ai', 'bmp', 'gif', 'ico', 'jpeg', 'jpg', 'ps', 'psd', 'svg', 'tif', 'tiff'].includes(ext)) {
+  if (['png','ai', 'bmp', 'gif', 'ico', 'jpeg', 'jpg', 'ps', 'psd', 'svg', 'tif', 'tiff'].includes(ext)) {
     return 'image';
   }
 

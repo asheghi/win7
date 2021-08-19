@@ -1,6 +1,8 @@
-export const typeOf = (x) => toString.call(x).match(/\s([a-zA-Z]+)/)[1];
+export const typeOf = (x) => toString.call(x)
+  .match(/\s([a-zA-Z]+)/)[1];
 
-export const each = (obj, cb) => (typeOf(obj) === 'Object' ? Object.keys(obj).forEach((key) => cb(key, obj[key])) : obj.forEach(cb));
+export const each = (obj, cb) => (typeOf(obj) === 'Object' ? Object.keys(obj)
+  .forEach((key) => cb(key, obj[key])) : obj.forEach(cb));
 
 export const asyncEach = (obj, cb) => new Promise((resolve) => {
   const keys = typeOf(obj) === 'Object' ? Object.keys(obj) : obj;
@@ -8,13 +10,14 @@ export const asyncEach = (obj, cb) => new Promise((resolve) => {
     ...(
       typeOf(obj) === 'Object' ? [obj[keys[index]], keys[index]] : [keys[index], index]
     ),
-  ).then(() => {
-    if (index === keys.length - 1) {
-      resolve();
-    } else {
-      doAction(index + 1);
-    }
-  });
+  )
+    .then(() => {
+      if (index === keys.length - 1) {
+        resolve();
+      } else {
+        doAction(index + 1);
+      }
+    });
   doAction(0);
 });
 
@@ -35,9 +38,15 @@ export const offsetTo = (el, parent) => {
 
 //encoding an Uint8Array to base64
 export function encode(input) {
-  let keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-  let output = "";
-  let chr1, chr2, chr3, enc1, enc2, enc3, enc4;
+  let keyStr = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+  let output = '';
+  let chr1,
+    chr2,
+    chr3,
+    enc1,
+    enc2,
+    enc3,
+    enc4;
   let i = 0;
 
   while (i < input.length) {

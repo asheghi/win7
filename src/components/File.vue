@@ -72,9 +72,13 @@ export default {
       icon: null,
     };
   },
+  watch: {
+    file(n, o) {
+      this.updateThumbnail();
+    }
+  },
   async created() {
-    this.icon =await getFileThumbnail(this.file)
-    this.$forceUpdate();
+    await this.updateThumbnail()
   },
   computed: {
     fileName() {
@@ -138,6 +142,9 @@ export default {
       this.showRename = false;
       this.$emit('refresh')
     },
+    async updateThumbnail() {
+      this.icon = await getFileThumbnail(this.file)
+    }
   },
   style({ className }) {
     return [

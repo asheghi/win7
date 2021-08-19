@@ -19,7 +19,6 @@
       >
     </div>
     <FilesContainer
-      :key="path"
       :class="$style.content"
       v-bind="filesContainerProps"
       :file-props="{ darkText: true, onClick: click,}"

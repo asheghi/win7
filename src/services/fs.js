@@ -3,7 +3,8 @@ import { getFileType } from './apps';
 import { join, extname, basename, dirname } from 'path-browserify';
 import { getWallpapersList } from '../assets/images/Wallpapers/Wallpapers';
 import { EventEmitter2 } from 'eventemitter2';
-const emitter = new EventEmitter2({wildcard:true});
+
+const emitter = new EventEmitter2({ wildcard: true });
 
 let fs = {};
 
@@ -12,16 +13,16 @@ export async function initFS() {
   await populateFS();
 }
 
-export async function registerToFsEvent(func){
-  let listener = function (event,...values) {
+export function registerToFsEvent(func) {
+  let listener = function (event, ...values) {
     if (func && typeof func === 'function') {
-      func(event,...values);
+      func(event, ...values);
     }
   };
-  emitter.onAny(listener)
-  return ()=>{
+  emitter.onAny(listener);
+  return () => {
     emitter.offAny(listener);
-  }
+  };
 }
 
 export function createNewFile(fileObject) {
@@ -99,7 +100,7 @@ export async function deleteFile(filePath) {
       if (e) {
         return reject(e);
       }
-      emitter.emit('deleted',filePath);
+      emitter.emit('deleted', filePath);
       resolve();
     });
   });
@@ -109,7 +110,7 @@ export async function deleteDirectory(filePath) {
   if (await isEmptyDirectory(filePath)) {
     await new Promise((resolve, reject) => {
       fs.rmdir(filePath, function () {
-        emitter.emit('deleted',filePath);
+        emitter.emit('deleted', filePath);
         resolve();
       });
     });
@@ -122,7 +123,7 @@ export async function deleteDirectory(filePath) {
         await deleteDirectory(file);
         await new Promise((resolve, reject) => {
           fs.rmdir(file, function () {
-            emitter.emit('deleted',file);
+            emitter.emit('deleted', file);
             resolve();
           });
         });
@@ -135,7 +136,7 @@ export async function createNewFolder(filePath, directoryName) {
   if (!directoryName) {
     directoryName = await getNewFolderName(filePath);
   }
-  return new Promise((resolve, reject) => {
+  new Promise((resolve, reject) => {
     const newDirPath = join(filePath, directoryName);
     fs.mkdir(newDirPath, function (e) {
       if (e) {
@@ -144,13 +145,14 @@ export async function createNewFolder(filePath, directoryName) {
       resolve();
     });
   });
+  emitter.emit('created',filePath);
 }
 
 export async function createNewTextFile(filePath, fileName, content = '') {
   if (!fileName || await existsPath(join(filePath, fileName))) {
     fileName = await getNewTextFileName(filePath);
   }
-  return new Promise((resolve, reject) => {
+  await new Promise((resolve, reject) => {
     fs.writeFile(join(filePath, fileName), content, { encoding: 'utf8' }, function (e) {
       if (e) {
         return reject(e);
@@ -158,6 +160,7 @@ export async function createNewTextFile(filePath, fileName, content = '') {
       resolve();
     });
   });
+  emitter.emit('created',filePath);
 }
 
 export async function escapeShortcut(filePath) {
@@ -169,7 +172,7 @@ export async function escapeShortcut(filePath) {
 }
 
 export async function writeTextFile(filePath, content) {
-  return new Promise((resolve, reject) => {
+  await new Promise((resolve, reject) => {
     fs.writeFile(filePath, content, { encoding: 'utf8' }, function (e) {
       if (e) {
         return reject(e);
@@ -177,6 +180,7 @@ export async function writeTextFile(filePath, content) {
       resolve();
     });
   });
+  emitter.emit('created',filePath);
 }
 
 export async function renamePath(filePath, newName) {
@@ -184,10 +188,12 @@ export async function renamePath(filePath, newName) {
 }
 
 export async function moveFile(oldFile, directory) {
+  const newFile = join(directory, basename(oldFile));
   await new Promise((resolve, reject) => {
-    const newFile = join(directory, basename(oldFile));
     fs.rename(oldFile, newFile, resolve);
   });
+  emitter.emit('deleted',oldFile);
+  emitter.emit('created',newFile);
 }
 
 export async function copyFile(filePath, directory) {
@@ -205,6 +211,7 @@ export async function copyFile(filePath, directory) {
   await new Promise(resolve => {
     fs.writeFile(targetFile, fileContent, {}, resolve);
   });
+  emitter.emit('created',targetFile);
 }
 
 export function isFile(filePath) {
@@ -401,7 +408,7 @@ export async function _downloadDefaultWallpapers() {
     const file = join(basePath, name);
     const exists = await existsPath(file);
     if (!exists) {
-      promises.push(downloadFile(wallpaper, file))
+      promises.push(downloadFile(wallpaper, file));
     }
   }
 
@@ -438,6 +445,7 @@ async function downloadFile(url, path) {
     await new Promise(r => {
       fs.writeFile(path, Buffer.from(data), {}, r);
     });
+    emitter.emit('created', path);
   } catch (e) {
     console.error(e);
   }
@@ -448,4 +456,21 @@ export async function writeBuffer(file, unit8array) {
   await new Promise(r => {
     fs.writeFile(file, new Buffer(unit8array), {}, r);
   });
+  emitter.emit('created', file);
+}
+
+export async function handleDrop(path, files) {
+  for (let file of files) {
+    const unit8array = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = function () {
+        const arrayBuffer = this.result;
+        const array = new Uint8Array(arrayBuffer);
+        resolve(array);
+      };
+      reader.readAsArrayBuffer(file);
+    });
+    const filePath = join(path, file.name);
+    await writeBuffer(filePath, unit8array);
+  }
 }

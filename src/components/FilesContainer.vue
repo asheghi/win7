@@ -38,6 +38,7 @@ import {
   isFile,
   moveFile, registerToFsEvent
 } from '../services/fs';
+import {dirname} from 'path-browserify';
 
 const fixSelectionPosition = (selection) => {
   if (!selection) {
@@ -74,7 +75,8 @@ export default {
     direction: props.oneOf(['row', 'column'], 'row'),
     contextMenuExtras: props.obj(
       {},
-      (obj) => typeof obj === 'object' && !Object.keys(obj).find((it) => typeof obj[it] !== 'function'),
+      (obj) => typeof obj === 'object' && !Object.keys(obj)
+        .find((it) => typeof obj[it] !== 'function'),
     ),
   }),
   ...provideAs('$filesContainer'),
@@ -88,11 +90,19 @@ export default {
       selectionRectangle: null,
       loading: false,
       files: [],
-      unRegisterToFsEvent: () => {},
+      unRegisterToFsEvent: () => {
+      },
     };
   },
   watch: {
     search(n, o) {
+      this.fetchDirectoryFiles();
+    },
+    path(n, o) {
+      if (this.unRegisterToFsEvent && typeof this.unRegisterToFsEvent === 'function') {
+        this.unRegisterToFsEvent();
+      }
+      this.unRegisterToFsEvent = registerToFsEvent(this.onFsEvent);
       this.fetchDirectoryFiles();
     }
   },
@@ -111,14 +121,14 @@ export default {
     this.unRegisterToFsEvent();
   },
   mounted() {
-    this.unRegisterToFsEvent = registerToFsEvent(this.onFsEvent)
+    this.unRegisterToFsEvent = registerToFsEvent(this.onFsEvent);
     this.mover = swipe(
       this.$el,
       this.selectStart,
       this.whileSelect,
       this.selectEnd,
     );
-    this.droper = drop(this.$el, this.onDrop);
+    this.droper = drop(this.$el, this.path, this.onDrop);
     this.dragger = drag(this.$el, this.onDrag);
     this.fetchDirectoryFiles();
   },
@@ -148,7 +158,7 @@ export default {
           this.$el.style.overflow = null;
         });
         return this.getSelectedFiles()
-          .map((file) => file.file.path);
+          .map((file) => file.file);
       }
       return false;
     },
@@ -156,7 +166,8 @@ export default {
       this.copyOrMoveFilesHere('move', data);
     },
     getSelectedFiles() {
-      return this.fileRefs.filter((file) => file.selected);
+      let selectedFiles = this.fileRefs.filter((file) => file.selected);
+      return selectedFiles;
     },
     isEventOnFile(e) {
       const selectedFiles = this.getSelectedFiles();
@@ -343,11 +354,16 @@ export default {
         this.loading = false;
       }
     },
-    onFsEvent(name,...values) {
-      if(name === 'deleted'){
-        const [file] = values;
-        if (file.startsWith(this.path)) {
-          this.fetchDirectoryFiles();
+    onFsEvent(name, ...values) {
+      const [file] = values;
+
+      if (dirname(file) === this.path) {
+        //then we should care what happened
+        if (name === 'created') {
+          this.files = [...this.files.filter(f => f !== file), file];
+        }
+        if (name === 'deleted') {
+          this.files = this.files.filter(f => f !== file);
         }
       }
     }
