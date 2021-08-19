@@ -5,7 +5,9 @@
         <div class="loading" v-if="loading">
           Loading ...
         </div>
-        <div class="image-container" ref="imageContainer" :class="{realSize:realSize,zoomMode,}">
+        <div
+          @contextmenu="openContextMenu"
+          class="image-container" ref="imageContainer" :class="{realSize:realSize,zoomMode,}">
           <img ref="image" v-if="!loading &&  src" :src="src" alt="" :style="imageStyleObj">
         </div>
       </div>
@@ -116,7 +118,7 @@ export default {
     filePath: {},
     wmId: {},
   },
-  inject:['$wm'],
+  inject:['$wm','$cnf'],
   mounted() {
     this.fetchImageFile();
     this.fetchSiblingFiles();
@@ -346,6 +348,18 @@ export default {
     },
     updateWindowTitle() {
       this.$wm.updateTitle(this.wmId,basename(this.currentFile) + '  -  Windows Photo Viewer');
+    },
+    openContextMenu(e) {
+      const CHANGE_WALLPAPER = 'Set as Wallpaper';
+      const items = [CHANGE_WALLPAPER];
+      const handler = (item) =>{
+        if (item === CHANGE_WALLPAPER) {
+          this.$cnf.setConfig({
+            wallpaperPath: this.currentFile,
+          });
+        }
+      }
+      this.$wm.openContextMenu(e,items,handler)
     }
   },
   computed: {
@@ -424,6 +438,7 @@ export default {
         }
 
         img {
+          margin:0!important;
           width: unset;
           height: unset;
           object-fit: unset;
