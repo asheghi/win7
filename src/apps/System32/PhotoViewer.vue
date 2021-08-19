@@ -5,8 +5,8 @@
         <div class="loading" v-if="loading">
           Loading ...
         </div>
-        <div class="image-container" :class="{realSize:realSize}">
-          <img ref="image" v-if="!loading &&  src" :src="src" alt="">
+        <div class="image-container" ref="imageContainer" :class="{realSize:realSize,zoomMode,}">
+          <img ref="image" v-if="!loading &&  src" :src="src" alt="" :style="imageStyleObj">
         </div>
       </div>
     </div>
@@ -14,7 +14,10 @@
       <div class="rounded">
         <div class="left">
           <div class="zoom">
-            <img width="24" :src="IconZoomIn" alt="">
+            <img @click="switchZoom" width="24" :src="IconZoomIn" alt="">
+            <div v-if="zoomMode" class="zoom-slider">
+              <input v-model="zoom" type="range" orient="vertical" min="1" max="100">
+            </div>
           </div>
           <div class="size" @click="switchMode">
             <img width="24" :src="IconZoomFit" alt="">
@@ -118,6 +121,24 @@ export default {
     this.fetchSiblingFiles();
     document.addEventListener('keydown', this.onKeyboardKeyDown);
   },
+  data() {
+    return {
+      src: null,
+      realSize: null,
+      currentFile: this.filePath,
+      IconZoomIn,
+      IconZoomFit,
+      IconImage,
+      IconRotateLeft,
+      IconRotateRight,
+      loading: false,
+      images: [],
+      slideShowMode: false,
+      zoomMode: false,
+      zoom: 10,
+      imageHasListener: false,
+    };
+  },
   beforeDestroy() {
     document.removeEventListener('keydown', this.onKeyboardKeyDown);
   },
@@ -126,7 +147,7 @@ export default {
       if (n && n !== o) {
         this.fetchImageFile();
       }
-    }
+    },
   },
   methods: {
     async fetchImageFile() {
@@ -143,6 +164,11 @@ export default {
             const buffer = await fetchFile(path, { encode: 'unit8array' });
             const bytes = new Uint8Array(buffer);
             this.src = 'data:image/png;base64,' + encode(bytes);
+          }
+          //image scroll
+          if (!this.imageHasListener) {
+            this.imageHasListener = true;
+            this.registerImageDrag();
           }
         } catch (e) {
         } finally {
@@ -250,6 +276,70 @@ export default {
     switchMode() {
       this.realSize = Boolean(!this.realSize);
       this.$forceUpdate();
+    },
+    switchZoom() {
+      this.zoomMode = Boolean(!this.zoomMode);
+    },
+    registerImageDrag() {
+      const imageContainerEl = this.$refs.imageContainer;
+
+      let pos = {
+        top: 0,
+        left: 0,
+        x: 0,
+        y: 0
+      };
+      let mouseIsDown = false;
+      const mouseUpHandler = function () {
+        mouseIsDown = false;
+        imageContainerEl.style.cursor = 'auto';
+        imageContainerEl.style.removeProperty('user-select');
+
+        document.removeEventListener('mousemove', mouseMoveHandler);
+        document.removeEventListener('mouseup', mouseUpHandler);
+      };
+      imageContainerEl.addEventListener('mouseleave', function () {
+        mouseIsDown = false;
+        imageContainerEl.style.cursor = 'auto';
+        imageContainerEl.style.removeProperty('user-select');
+      });
+      const mouseDownHandler = function (e) {
+        mouseIsDown = true;
+        pos = {
+          // The current scroll
+          left: imageContainerEl.scrollLeft,
+          top: imageContainerEl.scrollTop,
+          // Get the current mouse position
+          x: e.clientX,
+          y: e.clientY,
+        };
+
+        imageContainerEl.style.cursor = 'grabbing';
+        imageContainerEl.addEventListener('mousemove', mouseMoveHandler);
+        imageContainerEl.addEventListener('mouseup', mouseUpHandler);
+      };
+      const mouseMoveHandler = function (e) {
+        e.preventDefault();
+        if (!mouseIsDown) {
+          return;
+        }
+        // How far the mouse has been moved
+        const dx = e.clientX - pos.x;
+        const dy = e.clientY - pos.y;
+
+        // Scroll the element
+        imageContainerEl.scrollTop = pos.top - dy;
+        imageContainerEl.scrollLeft = pos.left - dx;
+      };
+      imageContainerEl.addEventListener('mousedown', mouseDownHandler);
+      imageContainerEl.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        if (e.deltaY > 0) {
+          this.zoom = Math.min(100, this.zoom + this.zoom / 10);
+        }else if(e.deltaY < 0){
+          this.zoom = Math.max(1, this.zoom - this.zoom / 10);
+        }
+      });
     }
   },
   computed: {
@@ -273,21 +363,18 @@ export default {
         return this.images[this.images.length - 1];
       }
     },
-  },
-  data() {
-    return {
-      src: null,
-      realSize: null,
-      currentFile: this.filePath,
-      IconZoomIn,
-      IconZoomFit,
-      IconImage,
-      IconRotateLeft,
-      IconRotateRight,
-      loading: false,
-      images: [],
-      slideShowMode: false,
-    };
+    imageStyleObj() {
+      let style = {};
+      if (this.zoomMode) {
+        let scale = this.zoom / 10;
+        const img = this.$refs.image;
+        const realWidth = img.naturalWidth;
+        const realHeight = img.naturalHeight;
+        style.width = parseInt(realWidth * scale) + 'px';
+        style.height = parseInt(realHeight * scale) + 'px';
+      }
+      return style;
+    }
   }
 };
 </script>
@@ -312,9 +399,25 @@ export default {
       height: 100%;
 
       &.realSize {
+        overflow: auto;
+
+        img {
+          width: unset;
+          height: unset;
+          object-fit: unset;
+        }
+      }
+
+      &.zoomMode {
         overflow: scroll;
 
-        img{
+        & {
+          display: block;
+          justify-content: center;
+          align-items: center;
+        }
+
+        img {
           width: unset;
           height: unset;
           object-fit: unset;
@@ -323,6 +426,7 @@ export default {
     }
 
     img {
+      transition: all ease-out 400ms;
       height: 100%;
       width: 100%;
       object-fit: contain;
@@ -390,6 +494,16 @@ export default {
 
         .zoom {
           margin-right: -26px;
+          position: relative;
+
+          .zoom-slider {
+            background: rgba(white, .8);
+            border-radius: 8px;
+            padding: 4px;
+            position: absolute;
+            left: -160px;
+            top: 4px;
+          }
         }
       }
 
@@ -446,7 +560,6 @@ export default {
 
         .previous, .next {
           padding: 0 16px;
-
 
           border: 1px solid rgba(black, .3);
           background: linear-gradient(180deg,
