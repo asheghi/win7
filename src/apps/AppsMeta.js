@@ -28,7 +28,7 @@ export default {
         icon: calcIcon(filePath),
         width: 600,
         height: 500,
-        title: 'Explorer',
+        title: '',
         isSystemApp: true,
       });
     },

@@ -77,7 +77,7 @@ export const calculateFileWindowProperties = async (filePath) => {
   }
   return {
     ...windowProperties,
-    title: windowProperties.title || reverseSlash(filePath) || 'Window',
+    title: windowProperties.title,
     maximizable: getOr(windowProperties.maximizable, true),
     closable: getOr(windowProperties.closable, true),
     minimizable: getOr(windowProperties.minimizable, true),
