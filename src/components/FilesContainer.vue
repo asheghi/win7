@@ -36,7 +36,7 @@ import {
   deletePath,
   isDirectory,
   isFile,
-  moveFile
+  moveFile, registerToFsEvent
 } from '../services/fs';
 
 const fixSelectionPosition = (selection) => {
@@ -88,6 +88,7 @@ export default {
       selectionRectangle: null,
       loading: false,
       files: [],
+      unRegisterToFsEvent: () => {},
     };
   },
   watch: {
@@ -106,7 +107,11 @@ export default {
       return this.path === 'C:/User/Desktop' && this.$parent.$options.name === 'Desktop';
     },
   },
+  beforeDestroy() {
+    this.unRegisterToFsEvent();
+  },
   mounted() {
+    this.unRegisterToFsEvent = registerToFsEvent(this.onFsEvent)
     this.mover = swipe(
       this.$el,
       this.selectStart,
@@ -200,7 +205,6 @@ export default {
             }
           }
           this.loading = false;
-          await this.fetchDirectoryFiles();
         } else if (item === 'Refresh') {
           await this.fetchDirectoryFiles();
         } else if (item === 'Create New Folder') {
@@ -337,6 +341,14 @@ export default {
         console.error(e);
       } finally {
         this.loading = false;
+      }
+    },
+    onFsEvent(name,...values) {
+      if(name === 'deleted'){
+        const [file] = values;
+        if (file.startsWith(this.path)) {
+          this.fetchDirectoryFiles();
+        }
       }
     }
   },

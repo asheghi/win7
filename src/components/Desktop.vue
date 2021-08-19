@@ -4,7 +4,7 @@
     ref="desktop"
   >
     <FilesContainer
-      path="C:/User/Desktop"
+      path="/C:/User/Desktop"
       direction="column"
       :file-props="{ shadow: true }"
       :context-menu-extras="contextMenuExtras"

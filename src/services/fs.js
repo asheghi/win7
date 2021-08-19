@@ -1,14 +1,27 @@
 import * as BrowserFS from 'browserfs';
 import { getFileType } from './apps';
-
 import { join, extname, basename, dirname } from 'path-browserify';
 import { getWallpapersList } from '../assets/images/Wallpapers/Wallpapers';
+import { EventEmitter2 } from 'eventemitter2';
+const emitter = new EventEmitter2({wildcard:true});
 
 let fs = {};
 
 export async function initFS() {
   fs = await getFS();
   await populateFS();
+}
+
+export async function registerToFsEvent(func){
+  let listener = function (event,...values) {
+    if (func && typeof func === 'function') {
+      func(event,...values);
+    }
+  };
+  emitter.onAny(listener)
+  return ()=>{
+    emitter.offAny(listener);
+  }
 }
 
 export function createNewFile(fileObject) {
@@ -86,6 +99,7 @@ export async function deleteFile(filePath) {
       if (e) {
         return reject(e);
       }
+      emitter.emit('deleted',filePath);
       resolve();
     });
   });
@@ -95,6 +109,7 @@ export async function deleteDirectory(filePath) {
   if (await isEmptyDirectory(filePath)) {
     await new Promise((resolve, reject) => {
       fs.rmdir(filePath, function () {
+        emitter.emit('deleted',filePath);
         resolve();
       });
     });
@@ -107,6 +122,7 @@ export async function deleteDirectory(filePath) {
         await deleteDirectory(file);
         await new Promise((resolve, reject) => {
           fs.rmdir(file, function () {
+            emitter.emit('deleted',file);
             resolve();
           });
         });
