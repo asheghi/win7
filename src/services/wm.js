@@ -159,6 +159,11 @@ export const minimizeWindow = (id, _newValue) => {
   theWin.minimized = newValue;
 };
 
+export const updateTitle = (id, title) => {
+  const theWin = findWindowById(id);
+  theWin.title = title;
+};
+
 export const maximizeWindow = (id, _newValue) => {
   const theWin = findWindowById(id);
   if (theWin.minimized) {

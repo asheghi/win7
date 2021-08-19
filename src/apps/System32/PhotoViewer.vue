@@ -116,6 +116,7 @@ export default {
     filePath: {},
     wmId: {},
   },
+  inject:['$wm'],
   mounted() {
     this.fetchImageFile();
     this.fetchSiblingFiles();
@@ -144,6 +145,7 @@ export default {
   },
   watch: {
     currentFile(n, o) {
+      this.$wm.updateTitle(this.wmId,basename(this.currentFile));
       if (n && n !== o) {
         this.fetchImageFile();
       }
