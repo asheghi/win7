@@ -51,6 +51,7 @@ import { rgba } from '../styles/utils';
 import { basename } from 'path-browserify';
 import { calculateFileWindowProperties } from '../services/wm';
 import { renamePath } from '../services/fs';
+import { getFileThumbnail, getFileWindowProperties } from '../services/apps';
 
 export default {
   ...props({
@@ -72,8 +73,7 @@ export default {
     };
   },
   async created() {
-    const properties = await calculateFileWindowProperties(this.file);
-    this.icon = properties.icon;
+    this.icon =await getFileThumbnail(this.file)
     this.$forceUpdate();
   },
   computed: {

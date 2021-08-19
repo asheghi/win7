@@ -74,3 +74,21 @@ export async function getFileWindowProperties(filePath) {
   const result = await windowProperties(escaped);
   return result;
 }
+
+
+export async function getFileThumbnail(filePath) {
+  const escaped = await escapeShortcut(filePath);
+  const appName = await getAppForFilePath(escaped);
+  const appMeta = appsMeta[appName] || {};
+  const {windowProperties , thumbnail} = appMeta;
+  if (thumbnail && typeof thumbnail === 'function') {
+    return await thumbnail(escaped);
+  }
+  if (!(windowProperties && typeof windowProperties === 'function')) {
+    return {};
+  }
+  const result = await windowProperties(escaped);
+  return result.icon;
+}
+
+

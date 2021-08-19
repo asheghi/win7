@@ -1,4 +1,4 @@
-import { fetchTextFile, getPathName, reverseSlash } from '../services/fs';
+import { fetchFile, fetchTextFile, getPathName } from '../services/fs';
 
 import fileIcon from '../assets/icons/jpg.png?url';
 import textIcon from '../assets/icons/txt.png?url';
@@ -11,6 +11,8 @@ import driveIcon from '../assets/icons/drive.png?url';
 import folderIcon from '../assets/icons/folder.png?url';
 import icon from '../assets/icons/background-capplet.png';
 import photoViewer from '../assets/icons/jpg.png';
+import { getFileType } from '../services/apps';
+import { encode } from '../utils/utils';
 
 export default {
   'Explorer': {
@@ -89,15 +91,28 @@ export default {
       isSystemApp: true,
     }),
   },
-  'PhotoViewer':{
-    canHandle:({ fileType }) => fileType === 'image',
-    windowProperties: () => ({
-      title: 'Photo Viewer',
-      icon:photoViewer,
-      width: 900,
-      height: 700,
-      maximizable: true,
-      isSystemApp: true,
-    }),
+  'PhotoViewer': {
+    canHandle: ({ fileType }) => fileType === 'image',
+    windowProperties: async () => {
+      return ({
+        title: 'Photo Viewer',
+        //window icon
+        icon: photoViewer,
+        width: 900,
+        height: 700,
+        maximizable: true,
+        isSystemApp: true,
+      });
+    },
+    thumbnail: async (file) => {
+      const fileType = getFileType(file);
+      if (fileType === 'image') {
+          const buffer = await fetchFile(file);
+          const bytes = new Uint8Array(buffer);
+          return 'data:image/png;base64,' + encode(bytes);
+      }
+
+      return photoViewer;
+    }
   }
 };
