@@ -27,6 +27,7 @@ import WarningIcon from '../../assets/icons/warning.png?url';
 import QuestionIcon from '../../assets/icons/question.png?url';
 import ErrorSound from '../../assets/sounds/error.wav?url';
 import DingSound from '../../assets/sounds/ding.wav?url';
+import IconRecycleBin from '../../assets/icons/trashcan_full.png';
 import { props, inject } from '../../utils/vue';
 import { rgba } from '../../styles/utils';
 
@@ -35,6 +36,7 @@ const typeToIconMap = {
   info: InfoIcon,
   warning: WarningIcon,
   question: QuestionIcon,
+  delete:IconRecycleBin,
 };
 
 const typeToSoundMap = {
@@ -42,6 +44,7 @@ const typeToSoundMap = {
   info: DingSound,
   warning: DingSound,
   question: DingSound,
+  delete:DingSound,
 };
 
 export default {
