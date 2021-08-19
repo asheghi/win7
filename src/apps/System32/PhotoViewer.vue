@@ -32,7 +32,7 @@
               ></path>
             </svg>
           </div>
-          <div class="playSlide">
+          <div @click="showSlide" class="playSlide">
             <div class="buttonPlay">
               <img width="32" :src="IconImage" alt="">
             </div>
@@ -84,6 +84,11 @@
         </div>
       </div>
     </div>
+    <teleport v-if="slideShowMode" to="body">
+      <div class="PhotoViewer_slide-show" @click="showNext">
+        <img ref="imageSlideShow" v-if="!loading &&  src" :src="src" alt="" :class="mode">
+      </div>
+    </teleport>
   </div>
 </template>
 
@@ -97,7 +102,7 @@ import IconZoomFit from '../../assets/icons/zoom-fit-best.png';
 import IconImage from '../../assets/icons/jpg.png';
 import IconRotateLeft from '../../assets/icons/object-rotate-left.png';
 import IconRotateRight from '../../assets/icons/object-rotate-right.png';
-import  Image from 'image-js';
+import Image from 'image-js';
 import { closeWindow, openDialog } from '../../services/wm';
 import IconRecycleBin from '../../assets/icons/trashcan_full.png';
 
@@ -105,11 +110,15 @@ export default {
   name: 'PhotoViewer',
   props: {
     filePath: {},
-    wmId:{},
+    wmId: {},
   },
   mounted() {
     this.fetchImageFile();
     this.fetchSiblingFiles();
+    document.addEventListener('keydown', this.onKeyboardKeyDown);
+  },
+  beforeDestroy() {
+    document.removeEventListener('keydown', this.onKeyboardKeyDown);
   },
   watch: {
     currentFile(n, o) {
@@ -130,7 +139,7 @@ export default {
           const path = await escapeShortcut(this.currentFile);
           const type = getFileType(path);
           if (type === 'image') {
-            const buffer = await fetchFile(path,{encode:'unit8array'});
+            const buffer = await fetchFile(path, { encode: 'unit8array' });
             const bytes = new Uint8Array(buffer);
             this.src = 'data:image/png;base64,' + encode(bytes);
           }
@@ -142,17 +151,19 @@ export default {
     },
     async fetchSiblingFiles() {
       const files = await readDirectory(dirname(this.filePath));
-      this.siblings = [];
+      this.images = [];
       for (let file of files) {
         const type = await getFileType(file);
         if (type === 'image') {
-          this.siblings.push(file);
+          this.images.push(file);
         }
       }
     },
     showNext() {
       if (this.nextImage) {
         this.currentFile = this.nextImage;
+      } else {
+        this.currentFile = this.images[0];
       }
     },
     showPrev() {
@@ -163,64 +174,98 @@ export default {
     async rotateRight() {
       this.loading = true;
       const data = await fetchFile(this.currentFile);
-      const image = await Image.load(data)
-      const rotated = image.rotate(90).toBuffer()
-      await writeBuffer(this.currentFile,rotated);
-      await this.fetchImageFile()
+      const image = await Image.load(data);
+      const rotated = image.rotate(90)
+        .toBuffer();
+      await writeBuffer(this.currentFile, rotated);
+      await this.fetchImageFile();
     },
     async rotateLeft() {
       this.loading = true;
       const data = await fetchFile(this.currentFile);
-      const image = await Image.load(data)
-      const rotated = image.rotate(-90).toBuffer()
+      const image = await Image.load(data);
+      const rotated = image.rotate(-90)
+        .toBuffer();
       await writeBuffer(this.currentFile, rotated);
-      await this.fetchImageFile()
+      await this.fetchImageFile();
     },
     showDeleteDialog(image) {
       //todo implement recycle bin
       openDialog({
-        title:"Delete File",
-        content:"Are you sure you want to delete this file?",
-        buttons:['Yes','No'],
-        onClick:(btn) => {
+        title: 'Delete File',
+        content: 'Are you sure you want to delete this file?',
+        buttons: ['Yes', 'No'],
+        onClick: (btn) => {
           if (btn === 'Yes') {
             this.deleteImage();
           }
         },
-        icon:IconRecycleBin,
-        type:'delete'
-      })
+        icon: IconRecycleBin,
+        type: 'delete'
+      });
     },
     async deleteImage() {
       await deleteFile(this.currentFile);
       if (this.nextImage) {
         this.showNext();
-      }else if (this.prevImage) {
+      } else if (this.prevImage) {
         this.showPrev();
-      }else{
+      } else {
         closeWindow(this.wmId);
+      }
+    },
+    requestFullscreen() {
+      const elem = this.$refs.image;
+      const method = elem.requestFullscreen
+        || elem.webkitRequestFullscreen
+        || elem.msRequestFullscreen;
+      if (method) {
+        method.call(elem);
+      }
+    },
+    showSlide() {
+      this.slideShowMode = true;
+    },
+    exitSlideShow() {
+      this.slideShowMode = false;
+    },
+    onKeyboardKeyDown(event) {
+      const name = event.key;
+      const code = event.code;
+
+      if (code === 'ArrowLeft') {
+        this.showPrev();
+      }
+      if (code === 'ArrowRight') {
+        this.showNext();
+      }
+      if (code === 'Space') {
+        this.slideShowMode = true;
+      }
+      if (code === 'Escape') {
+        this.slideShowMode = false;
       }
     }
   },
   computed: {
     indexInSiblings() {
       let current = this.currentFile;
-      return this.siblings.findIndex(f => basename(f) === basename(current));
+      return this.images.findIndex(f => basename(f) === basename(current));
     },
     nextImage() {
-      if (!this.siblings || !this.siblings.length) return null;
-      if (this.siblings.length - 1 > this.indexInSiblings) {
-        return this.siblings[this.indexInSiblings + 1];
+      if (!this.images || !this.images.length) return null;
+      if (this.indexInSiblings !== this.images.length - 1) {
+        return this.images[this.indexInSiblings + 1];
       } else {
-        return null;
+        return this.images[0];
       }
     },
     prevImage() {
-      if (!this.siblings || !this.siblings.length) return null;
-      if (this.indexInSiblings > 1) {
-        return this.siblings[this.indexInSiblings - 1];
+      if (!this.images || !this.images.length) return null;
+      if (this.indexInSiblings !== 0) {
+        return this.images[this.indexInSiblings - 1];
       } else {
-        return null;
+        return this.images[this.images.length - 1];
       }
     },
   },
@@ -235,7 +280,8 @@ export default {
       IconRotateLeft,
       IconRotateRight,
       loading: false,
-      siblings: [],
+      images: [],
+      slideShowMode: false,
     };
   }
 };
@@ -465,7 +511,21 @@ export default {
         }
       }
     }
+  }
+}
 
+.PhotoViewer_slide-show {
+  background: black;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+
+  img {
+    height: 100%;
+    width: 100%;
+    object-fit: contain;
   }
 }
 </style>
