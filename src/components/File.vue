@@ -190,9 +190,10 @@ export default {
             ...(this.block ? {
               height: '34px',
             } : {
-              width: '55px',
+              width: 'auto',
             }),
             minHeight:'34px',
+            maxHeight:'42px',
            // borderRadius: '9px',
             filter: `drop-shadow(0 2px 2px ${rgba(0, 0.3)})`,
           },
