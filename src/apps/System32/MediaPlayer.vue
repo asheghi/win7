@@ -7,6 +7,9 @@
       <img src="https://via.placeholder.com/300x300" alt="">
       <video name="media" controls="controls" ref="audio"></video>
     </div>
+    <div class="progress">
+      <input type="range" min="0" :max="maxProgress">
+    </div>
     <div class="controls">
       <div class="rounded-left">
         00:05
@@ -103,10 +106,18 @@
       </div>
       <div class="rounded-right">
         <div class="full-screen" v-if="!fullScreen">
-          <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path d="M 8.5 7 C 5.4802259 7 3 9.4802259 3 12.5 L 3 35.5 C 3 38.519774 5.4802259 41 8.5 41 L 39.5 41 C 42.519774 41 45 38.519774 45 35.5 L 45 12.5 C 45 9.4802259 42.519774 7 39.5 7 L 8.5 7 z M 8.5 10 L 39.5 10 C 40.898226 10 42 11.101774 42 12.5 L 42 35.5 C 42 36.898226 40.898226 38 39.5 38 L 28 38 L 28 29.5 C 28 26.480763 25.519237 24 22.5 24 L 6 24 L 6 12.5 C 6 11.101774 7.1017741 10 8.5 10 z M 37.470703 12.986328 A 1.50015 1.50015 0 0 0 37.310547 13 L 32.5 13 A 1.50015 1.50015 0 1 0 32.5 16 L 33.878906 16 L 28.439453 21.439453 A 1.50015 1.50015 0 1 0 30.560547 23.560547 L 36 18.121094 L 36 19.5 A 1.50015 1.50015 0 1 0 39 19.5 L 39 14.673828 A 1.50015 1.50015 0 0 0 37.470703 12.986328 z M 6 27 L 22.5 27 C 23.892763 27 25 28.107237 25 29.5 L 25 38 L 8.5 38 C 7.1017741 38 6 36.898226 6 35.5 L 6 27 z"></path></svg>
+          <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+            <path
+              d="M 8.5 7 C 5.4802259 7 3 9.4802259 3 12.5 L 3 35.5 C 3 38.519774 5.4802259 41 8.5 41 L 39.5 41 C 42.519774 41 45 38.519774 45 35.5 L 45 12.5 C 45 9.4802259 42.519774 7 39.5 7 L 8.5 7 z M 8.5 10 L 39.5 10 C 40.898226 10 42 11.101774 42 12.5 L 42 35.5 C 42 36.898226 40.898226 38 39.5 38 L 28 38 L 28 29.5 C 28 26.480763 25.519237 24 22.5 24 L 6 24 L 6 12.5 C 6 11.101774 7.1017741 10 8.5 10 z M 37.470703 12.986328 A 1.50015 1.50015 0 0 0 37.310547 13 L 32.5 13 A 1.50015 1.50015 0 1 0 32.5 16 L 33.878906 16 L 28.439453 21.439453 A 1.50015 1.50015 0 1 0 30.560547 23.560547 L 36 18.121094 L 36 19.5 A 1.50015 1.50015 0 1 0 39 19.5 L 39 14.673828 A 1.50015 1.50015 0 0 0 37.470703 12.986328 z M 6 27 L 22.5 27 C 23.892763 27 25 28.107237 25 29.5 L 25 38 L 8.5 38 C 7.1017741 38 6 36.898226 6 35.5 L 6 27 z"
+            ></path>
+          </svg>
         </div>
         <div class="exit-full-screen" v-if="fullScreen">
-          <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path d="M 8.5 7 C 5.4802259 7 3 9.4802259 3 12.5 L 3 35.5 C 3 38.519774 5.4802259 41 8.5 41 L 39.5 41 C 42.519774 41 45 38.519774 45 35.5 L 45 12.5 C 45 9.4802259 42.519774 7 39.5 7 L 8.5 7 z M 8.5 10 L 39.5 10 C 40.898226 10 42 11.101774 42 12.5 L 42 35.5 C 42 36.898226 40.898226 38 39.5 38 L 28 38 L 28 29.5 C 28 26.480763 25.519237 24 22.5 24 L 6 24 L 6 12.5 C 6 11.101774 7.1017741 10 8.5 10 z M 37.470703 12.986328 A 1.50015 1.50015 0 0 0 36.439453 13.439453 L 31 18.878906 L 31 17.5 A 1.50015 1.50015 0 0 0 29.476562 15.978516 A 1.50015 1.50015 0 0 0 28 17.5 L 28 22.277344 A 1.50015 1.50015 0 0 0 29.720703 24 L 34.5 24 A 1.50015 1.50015 0 1 0 34.5 21 L 33.121094 21 L 38.560547 15.560547 A 1.50015 1.50015 0 0 0 37.470703 12.986328 z M 6 27 L 22.5 27 C 23.892763 27 25 28.107237 25 29.5 L 25 38 L 8.5 38 C 7.1017741 38 6 36.898226 6 35.5 L 6 27 z"></path></svg>
+          <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+            <path
+              d="M 8.5 7 C 5.4802259 7 3 9.4802259 3 12.5 L 3 35.5 C 3 38.519774 5.4802259 41 8.5 41 L 39.5 41 C 42.519774 41 45 38.519774 45 35.5 L 45 12.5 C 45 9.4802259 42.519774 7 39.5 7 L 8.5 7 z M 8.5 10 L 39.5 10 C 40.898226 10 42 11.101774 42 12.5 L 42 35.5 C 42 36.898226 40.898226 38 39.5 38 L 28 38 L 28 29.5 C 28 26.480763 25.519237 24 22.5 24 L 6 24 L 6 12.5 C 6 11.101774 7.1017741 10 8.5 10 z M 37.470703 12.986328 A 1.50015 1.50015 0 0 0 36.439453 13.439453 L 31 18.878906 L 31 17.5 A 1.50015 1.50015 0 0 0 29.476562 15.978516 A 1.50015 1.50015 0 0 0 28 17.5 L 28 22.277344 A 1.50015 1.50015 0 0 0 29.720703 24 L 34.5 24 A 1.50015 1.50015 0 1 0 34.5 21 L 33.121094 21 L 38.560547 15.560547 A 1.50015 1.50015 0 0 0 37.470703 12.986328 z M 6 27 L 22.5 27 C 23.892763 27 25 28.107237 25 29.5 L 25 38 L 8.5 38 C 7.1017741 38 6 36.898226 6 35.5 L 6 27 z"
+            ></path>
+          </svg>
         </div>
       </div>
     </div>
@@ -147,6 +158,8 @@ export default {
       PlayMuted,
       volume: 90,
       fullScreen: false,
+      //seconds
+      maxProgress: 1800,
     };
   },
   async created() {
@@ -230,6 +243,16 @@ export default {
   }
 
   .media-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    min-height: 300px;
+    image {
+      min-width: 300px;
+      min-height: 300px;
+    }
+
     video {
       display: none;
       background: red;
@@ -237,16 +260,24 @@ export default {
     }
   }
 
+  &:hover{
+    .controls{
+      opacity: 1;
+    }
+  }
   .controls {
     position: absolute;
     bottom: 0;
     height: 50px;
     width: 100%;
 
+    transition: opacity ease-in 160ms;
+    opacity: 0;
+
     display: flex;
     justify-content: center;
 
-    .rounded-left,.rounded-right {
+    .rounded-left, .rounded-right {
       display: flex;
       align-items: center;
       height: 24px;
@@ -270,7 +301,7 @@ export default {
         min-width: 110px;
         display: flex;
         align-items: center;
-        justify-content: space-around;
+        justify-content: space-between;
 
         svg {
           fill: white;
@@ -405,16 +436,17 @@ export default {
         }
 
         .volume-range {
-          width: 60px;
+          width: 70px;
         }
       }
     }
 
-    .rounded-right{
+    .rounded-right {
       display: flex;
       justify-content: end;
       margin-left: 12px;
-      svg{
+
+      svg {
         fill: white;
       }
     }
