@@ -27,12 +27,9 @@
 </template>
 
 <script>
-import icon from '../../assets/icons/background-capplet.png';
 import { props, inject } from '../../utils/vue';
 import { px } from '../../styles/utils';
-import { getWallpapersList } from '../../assets/images/Wallpapers/Wallpapers';
 import { _downloadDefaultWallpapers, fetchFile, readDirectory } from '../../services/fs';
-import { encode } from '../../utils/utils';
 
 export default {
   name: 'ChangeBackground',
@@ -54,10 +51,9 @@ export default {
     for (const file of wallpapersFiles) {
       new Promise(async r => {
         const buffer = await fetchFile(file);
-        const bytes = new Uint8Array(buffer);
         this.list.push({
           file,
-          src: 'data:image/png;base64,' + encode(bytes),
+          src: URL.createObjectURL(new Blob([buffer],)),
         })
       })
     }

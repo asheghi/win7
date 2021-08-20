@@ -18,6 +18,10 @@ export function getFileType(filePath) {
   const ext = extname(filePath)
     .replace('.', '');
 
+  if (['mp4', 'avi','mpg','mpeg','mov','mkv','mxu'].includes(ext)) {
+    return 'video';
+  }
+
   if (['mp3', 'ogg', 'wma', 'wpl', 'mpa', 'mid', 'cda'].includes(ext)) {
     return 'audio';
   }

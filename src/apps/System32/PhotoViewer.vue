@@ -100,7 +100,6 @@
 
 <script>
 import { deleteFile, escapeShortcut, fetchFile, readDirectory, writeBuffer } from '../../services/fs';
-import { encode } from '../../utils/utils';
 import { getFileType } from '../../services/apps';
 import { dirname, basename ,} from 'path-browserify';
 import IconZoomIn from '../../assets/icons/zoom-in.png';
@@ -167,8 +166,7 @@ export default {
           const type = getFileType(path);
           if (type === 'image') {
             const buffer = await fetchFile(path, { encode: 'unit8array' });
-            const bytes = new Uint8Array(buffer);
-            this.src = 'data:image/png;base64,' + encode(bytes);
+            this.src = URL.createObjectURL(new Blob([buffer],));
           }
           //image scroll
           if (!this.imageHasListener) {

@@ -13,9 +13,13 @@
     "deploy": "npm run build -- --base=/win7/ && node build/deploy.js"
   },
   "dependencies": {
+    "@ffmpeg/core": "^0.10.0",
+    "@ffmpeg/ffmpeg": "^0.10.1",
     "browserfs": "^1.4.3",
     "eventemitter2": "^6.4.4",
+    "file-type": "^16.5.3",
     "image-js": "^0.32.0",
+    "jsmediatags": "^3.9.7",
     "path-browserify": "^1.0.1",
     "vue": "^3.0.5",
     "vue-component-style": "^1.1.0"

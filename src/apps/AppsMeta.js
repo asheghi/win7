@@ -6,13 +6,13 @@ import cameraIcon from '../assets/icons/camera.png?url';
 import webAppIcon from '../assets/icons/html.png?url';
 import computerIcon from '../assets/icons/my-computer.png?url';
 import notePadIcon from '../assets/icons/notepad.png?url';
-import mediaPlayerIcon from '../assets/icons/mp3.png?url';
+import AudioFileIcon from '../assets/icons/mp3.png?url';
+import MediaPlayerIcon from '../assets/icons/media-player.png?url';
 import driveIcon from '../assets/icons/drive.png?url';
 import folderIcon from '../assets/icons/folder.png?url';
 import icon from '../assets/icons/background-capplet.png';
 import photoViewer from '../assets/icons/jpg.png';
 import { getFileType } from '../services/apps';
-import { encode } from '../utils/utils';
 import { basename } from 'path-browserify';
 
 export default {
@@ -36,17 +36,27 @@ export default {
     },
   },
   'MediaPlayer': {
-    canHandle: ({ fileType }) => fileType === 'audio',
+    canHandle: ({ fileType }) => ['audio','video'].includes(fileType),
     windowProperties: async (file) => {
       return ({
-        icon: mediaPlayerIcon,
-        height: 100,
-        resizable: false,
-        maximizable: false,
+        icon: MediaPlayerIcon,
+        height: 300,
+        width:300,
+        resizable: true,
+        maximizable: true,
         isSystemApp: true,
         taskbarTitle: !file || file.endsWith('.exe') ? 'Media Player' : basename(file),
       });
     },
+    thumbnail:async function (file) {
+      const fileType = getFileType(file);
+      if (['audio','video'].includes(fileType)) {
+        //todo fetch thumbnail from binary file
+        /*const buffer = await fetchFile(file);
+        return URL.createObjectURL(new Blob([buffer],));*/
+      }
+      return AudioFileIcon;
+    }
   },
   'Notepad': {
     canHandle: ({ fileType }) => fileType === 'text',
@@ -116,10 +126,8 @@ export default {
       const fileType = getFileType(file);
       if (fileType === 'image') {
         const buffer = await fetchFile(file);
-        const bytes = new Uint8Array(buffer);
-        return 'data:image/png;base64,' + encode(bytes);
+        return URL.createObjectURL(new Blob([buffer],));
       }
-
       return photoViewer;
     }
   }

@@ -198,7 +198,7 @@ export default {
         flexDirection: 'column',
         overflow: 'hidden',
         fontSize: '15px',
-        minWidth: '400px',
+        minWidth: '300px',
         minHeight: titleHeight,
         '&.maximized': {
           width: '100% !important',

@@ -18,7 +18,6 @@ import { inject } from '../utils/vue';
 import { panelSize } from '../styles/constants';
 import FilesContainer from './FilesContainer.vue';
 import { fetchFile } from '../services/fs';
-import { encode } from '../utils/utils';
 import DefaultWallpaper from '../assets/images/Wallpapers/1.jpg?url';
 
 export default {
@@ -68,9 +67,8 @@ export default {
     },
     async loadWallpaper() {
       if (this.wallpaperFile) {
-        const file = await fetchFile(this.wallpaperFile);
-        const bytes = new Uint8Array(file);
-        const src = 'data:image/png;base64,' + encode(bytes);
+        const buffer = await fetchFile(this.wallpaperFile);
+        const src = URL.createObjectURL(new Blob([buffer],));
         this.$refs.desktop.style.backgroundImage = 'url("'+src+'")';
       }else{
         this.$refs.desktop.style.backgroundImage = 'url("'+DefaultWallpaper+'")';

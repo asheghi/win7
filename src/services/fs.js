@@ -145,7 +145,7 @@ export async function createNewFolder(filePath, directoryName) {
       resolve();
     });
   });
-  emitter.emit('created',filePath);
+  emitter.emit('created', filePath);
 }
 
 export async function createNewTextFile(filePath, fileName, content = '') {
@@ -160,7 +160,7 @@ export async function createNewTextFile(filePath, fileName, content = '') {
       resolve();
     });
   });
-  emitter.emit('created',filePath);
+  emitter.emit('created', filePath);
 }
 
 export async function escapeShortcut(filePath) {
@@ -180,7 +180,7 @@ export async function writeTextFile(filePath, content) {
       resolve();
     });
   });
-  emitter.emit('created',filePath);
+  emitter.emit('created', filePath);
 }
 
 export async function renamePath(filePath, newName) {
@@ -192,11 +192,11 @@ export async function moveFile(oldFile, directory) {
   await new Promise((resolve, reject) => {
     fs.rename(oldFile, newFile, resolve);
   });
-  emitter.emit('deleted',oldFile);
-  emitter.emit('created',newFile);
+  emitter.emit('deleted', oldFile);
+  emitter.emit('created', newFile);
 }
 
-export async function copyFile(filePath, directory,overwrite) {
+export async function copyFile(filePath, directory, overwrite) {
   const fileContent = await fetchFile(filePath);
   let fileName = basename(filePath);
   let targetFile = join(directory, fileName);
@@ -211,7 +211,7 @@ export async function copyFile(filePath, directory,overwrite) {
   await new Promise(resolve => {
     fs.writeFile(targetFile, fileContent, {}, resolve);
   });
-  emitter.emit('created',targetFile);
+  emitter.emit('created', targetFile);
   return targetFile;
 }
 
@@ -372,8 +372,8 @@ async function _writePrograms() {
   };
 
   await writeTextFile('/C:/Program Files/Method Draw.wapp', JSON.stringify(methodDraw),);
- // await writeTextFile('/C:/Program Files/Snap.wapp', JSON.stringify(snap),);
- // await writeTextFile('/C:/Program Files/Viska.wapp', JSON.stringify(Viska),);
+  // await writeTextFile('/C:/Program Files/Snap.wapp', JSON.stringify(snap),);
+  // await writeTextFile('/C:/Program Files/Viska.wapp', JSON.stringify(Viska),);
   await writeTextFile('/C:/Program Files/win93.wapp', JSON.stringify(win93),);
 
   //shortcuts
@@ -473,4 +473,15 @@ export async function handleDrop(path, files) {
     const filePath = join(path, file.name);
     await writeBuffer(filePath, unit8array);
   }
+}
+
+export async function stat(path) {
+  return new Promise((resolve, reject) => {
+    fs.stat(path,function (e, stats) {
+      if(e){
+        reject(e);
+      }
+      resolve(stats)
+    });
+  })
 }
