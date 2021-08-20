@@ -196,11 +196,11 @@ export async function moveFile(oldFile, directory) {
   emitter.emit('created',newFile);
 }
 
-export async function copyFile(filePath, directory) {
+export async function copyFile(filePath, directory,overwrite) {
   const fileContent = await fetchFile(filePath);
   let fileName = basename(filePath);
-  let targetFile;
-  while (true) {
+  let targetFile = join(directory, fileName);
+  while (!overwrite) {
     targetFile = join(directory, fileName);
     let exists = await existsPath(targetFile);
     if (!exists) {
@@ -212,6 +212,7 @@ export async function copyFile(filePath, directory) {
     fs.writeFile(targetFile, fileContent, {}, resolve);
   });
   emitter.emit('created',targetFile);
+  return targetFile;
 }
 
 export function isFile(filePath) {
@@ -385,8 +386,8 @@ async function _writePrograms() {
   //await writeTextFile('/C:/User/Desktop/Viska.link', '/C:/Program Files/Viska.wapp',);
   await writeTextFile('/C:/User/Desktop/win93.link', '/C:/Program Files/win93.wapp',);
 
-  await fs.mkdir('/C:/User/Desktop/New Folder');
-  await writeTextFile('/C:/User/Desktop/New Folder/Text File.txt', 'hello world',);
+  // await fs.mkdir('/C:/User/Desktop/New Folder');
+  // await writeTextFile('/C:/User/Desktop/New Folder/Text File.txt', 'hello world',);
 }
 
 async function _writeStartMenuItem() {
@@ -429,6 +430,7 @@ async function populateFS() {
   await fs.mkdir('/C:/User/Music');
   await fs.mkdir('/C:/User/Pictures');
   await fs.mkdir('/C:/User/Start Menu');
+  await fs.mkdir('/C:/Windows/Wallpapers');
 
   await _writePrograms();
   await _writeStartMenuItem();

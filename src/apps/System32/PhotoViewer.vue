@@ -118,7 +118,7 @@ export default {
     filePath: {},
     wmId: {},
   },
-  inject:['$wm','$cnf'],
+  inject:['$wm','$cnf','$fs'],
   mounted() {
     this.fetchImageFile();
     this.fetchSiblingFiles();
@@ -353,10 +353,16 @@ export default {
     openContextMenu(e) {
       const CHANGE_WALLPAPER = 'Set as Wallpaper';
       const items = [CHANGE_WALLPAPER];
-      const handler = (item) =>{
+      const handler = async (item) => {
         if (item === CHANGE_WALLPAPER) {
+          //instant change
           this.$cnf.setConfig({
             wallpaperPath: this.currentFile,
+          });
+          //then copy after change so user won't notice any lag
+          const copied = await this.$fs.copyFile(this.currentFile, '/C:/Windows/Wallpapers',true);
+          this.$cnf.setConfig({
+            wallpaperPath: copied,
           });
         }
       }
