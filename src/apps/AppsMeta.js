@@ -13,6 +13,7 @@ import icon from '../assets/icons/background-capplet.png';
 import photoViewer from '../assets/icons/jpg.png';
 import { getFileType } from '../services/apps';
 import { encode } from '../utils/utils';
+import { basename } from 'path-browserify';
 
 export default {
   'Explorer': {
@@ -30,6 +31,7 @@ export default {
         height: 500,
         title: '',
         isSystemApp: true,
+        taskbarTitle: !filePath || filePath.endsWith('.exe') ? 'Computer' : basename(filePath),
       });
     },
   },
@@ -42,6 +44,7 @@ export default {
         resizable: false,
         maximizable: false,
         isSystemApp: true,
+        taskbarTitle: !file || file.endsWith('.exe') ? 'Media Player' : basename(file),
       });
     },
   },
@@ -53,6 +56,7 @@ export default {
         width: 600,
         height: 500,
         isSystemApp: true,
+        taskbarTitle: !file || file.endsWith('.exe') ? 'NotePad' : basename(file),
       });
     },
   },
@@ -68,6 +72,7 @@ export default {
         height: 500,
         ...parsed,
         isSystemApp: true,
+        taskbarTitle: !filePath || filePath.endsWith('.exe') ? 'Web Application' : basename(filePath),
       };
     },
   },
@@ -78,6 +83,7 @@ export default {
       width: 600,
       height: 500,
       title: file ? getPathName(file.path) : 'Camera',
+      taskbarTitle: !file || file.endsWith('.exe') ? 'Camera' : basename(file),
     }),
   },
   'ChangeBackground': {
@@ -89,11 +95,12 @@ export default {
       height: 490,
       maximizable: false,
       isSystemApp: true,
+      taskbarTitle: 'Change Background',
     }),
   },
   'PhotoViewer': {
     canHandle: ({ fileType }) => fileType === 'image',
-    windowProperties: async () => {
+    windowProperties: async (file) => {
       return ({
         title: 'Photo Viewer',
         //window icon
@@ -102,14 +109,15 @@ export default {
         height: 700,
         maximizable: true,
         isSystemApp: true,
+        taskbarTitle: !file || file.endsWith('.exe') ? 'Photo Viewer' : basename(file),
       });
     },
     thumbnail: async (file) => {
       const fileType = getFileType(file);
       if (fileType === 'image') {
-          const buffer = await fetchFile(file);
-          const bytes = new Uint8Array(buffer);
-          return 'data:image/png;base64,' + encode(bytes);
+        const buffer = await fetchFile(file);
+        const bytes = new Uint8Array(buffer);
+        return 'data:image/png;base64,' + encode(bytes);
       }
 
       return photoViewer;

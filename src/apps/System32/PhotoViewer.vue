@@ -109,7 +109,7 @@ import IconImage from '../../assets/icons/jpg.png';
 import IconRotateLeft from '../../assets/icons/object-rotate-left.png';
 import IconRotateRight from '../../assets/icons/object-rotate-right.png';
 import Image from 'image-js';
-import { closeWindow, openDialog } from '../../services/wm';
+import { closeWindow, openDialog, updateToolbarTitle } from '../../services/wm';
 import IconRecycleBin from '../../assets/icons/trashcan_full.png';
 
 export default {
@@ -347,7 +347,8 @@ export default {
       });
     },
     updateWindowTitle() {
-      this.$wm.updateTitle(this.wmId,basename(this.currentFile) + '  -  Windows Photo Viewer');
+      this.$wm.updateTitle(this.wmId,basename(this.currentFile) + '  - Photo Viewer');
+      this.$wm.updateToolbarTitle(this.wmId,this.currentFile ? basename(this.currentFile) : 'Photo Viewer');
     },
     openContextMenu(e) {
       const CHANGE_WALLPAPER = 'Set as Wallpaper';

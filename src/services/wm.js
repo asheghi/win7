@@ -164,6 +164,11 @@ export const updateTitle = (id, title) => {
   theWin.title = title;
 };
 
+export const updateToolbarTitle = (id, title) => {
+  const theWin = findWindowById(id);
+  theWin.taskbarTitle = title;
+};
+
 export const maximizeWindow = (id, _newValue) => {
   const theWin = findWindowById(id);
   if (theWin.minimized) {

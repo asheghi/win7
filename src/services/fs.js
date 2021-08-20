@@ -371,8 +371,8 @@ async function _writePrograms() {
   };
 
   await writeTextFile('/C:/Program Files/Method Draw.wapp', JSON.stringify(methodDraw),);
-  await writeTextFile('/C:/Program Files/Snap.wapp', JSON.stringify(snap),);
-  await writeTextFile('/C:/Program Files/Viska.wapp', JSON.stringify(Viska),);
+ // await writeTextFile('/C:/Program Files/Snap.wapp', JSON.stringify(snap),);
+ // await writeTextFile('/C:/Program Files/Viska.wapp', JSON.stringify(Viska),);
   await writeTextFile('/C:/Program Files/win93.wapp', JSON.stringify(win93),);
 
   //shortcuts
@@ -381,8 +381,8 @@ async function _writePrograms() {
   await writeTextFile('/C:/User/Desktop/Change Background.link', '/C:/Windows/System32/ChangeBackground.exe',);
   await writeTextFile('/C:/User/Desktop/Hayde - Saghi.link', '/C:/User/Music/Hayde - Saghi.mp3',);
   await writeTextFile('/C:/User/Desktop/Method Draw.link', '/C:/Program Files/Method Draw.wapp',);
-  await writeTextFile('/C:/User/Desktop/Snap!.link', '/C:/Program Files/Snap.wapp',);
-  await writeTextFile('/C:/User/Desktop/Viska.link', '/C:/Program Files/Viska.wapp',);
+  //await writeTextFile('/C:/User/Desktop/Snap!.link', '/C:/Program Files/Snap.wapp',);
+  //await writeTextFile('/C:/User/Desktop/Viska.link', '/C:/Program Files/Viska.wapp',);
   await writeTextFile('/C:/User/Desktop/win93.link', '/C:/Program Files/win93.wapp',);
 
   await fs.mkdir('/C:/User/Desktop/New Folder');

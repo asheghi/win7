@@ -4,7 +4,7 @@
     @click="click"
     @contextmenu="openContextMenu"
   >
-    <img :src="window.icon"> {{ window.title }}
+    <img :src="window.icon"> {{ window.taskbarTitle }}
   </div>
 </template>
 

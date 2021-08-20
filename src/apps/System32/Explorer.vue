@@ -40,10 +40,15 @@ export default {
   ...inject('$fs', '$wm', '$snd'),
   ...props({
     filePath: props.obj(null),
-
+    wmId: props.any(),
   }),
   components: {
     FilesContainer,
+  },
+  watch: {
+    path(n, o) {
+      this.updateTaskbar()
+    }
   },
   data() {
     const hasFile = this.filePath;
@@ -98,6 +103,9 @@ export default {
         this.path = '/';
       }
     },
+    updateTaskbar() {
+      this.$wm.updateToolbarTitle(this.wmId,this.path ? basename(this.path) : 'Computer')
+    }
   },
   style({ className }) {
     return [
