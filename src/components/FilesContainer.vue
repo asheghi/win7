@@ -207,14 +207,14 @@ export default {
           selectedFiles.forEach((file) => file.click(null));
         } else if (item === 'Delete') {
           this.loading = true;
-          for (let file of selectedFiles) {
+          await Promise.all(selectedFiles.map(async file => {
             const { file: filePath } = file;
             try {
               await deletePath(filePath);
             } catch (err) {
               console.error(err);
             }
-          }
+          }))
           this.loading = false;
         } else if (item === 'Refresh') {
           await this.fetchDirectoryFiles();
@@ -356,7 +356,6 @@ export default {
     },
     onFsEvent(name, ...values) {
       const [file] = values;
-
       if (dirname(file) === this.path) {
         //then we should care what happened
         if (name === 'created') {

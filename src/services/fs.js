@@ -380,7 +380,6 @@ async function _writePrograms() {
   await writeTextFile('/C:/User/Desktop/My Computer.link', '/C:/Windows/System32/Explorer.exe',);
   await writeTextFile('/C:/User/Desktop/Notepad.link', '/C:/Windows/System32/Notepad.exe',);
   await writeTextFile('/C:/User/Desktop/Change Background.link', '/C:/Windows/System32/ChangeBackground.exe',);
-  await writeTextFile('/C:/User/Desktop/Hayde - Saghi.link', '/C:/User/Music/Hayde - Saghi.mp3',);
   await writeTextFile('/C:/User/Desktop/Method Draw.link', '/C:/Program Files/Method Draw.wapp',);
   //await writeTextFile('/C:/User/Desktop/Snap!.link', '/C:/Program Files/Snap.wapp',);
   //await writeTextFile('/C:/User/Desktop/Viska.link', '/C:/Program Files/Viska.wapp',);
@@ -436,7 +435,6 @@ async function populateFS() {
   await _writeStartMenuItem();
 
   await fs.writeFile('/C:/User/Desktop/TextFile.txt', 'hello world', { encoding: 'utf8' });
-  await fs.writeFile('/C:/User/Music/Hayde - Saghi.mp3', 'https://dl.dl2musica.com/singles/0003/Hayedeh%20-%20Saghi.mp3', { encoding: 'utf8' });
 }
 
 async function downloadFile(url, path) {
