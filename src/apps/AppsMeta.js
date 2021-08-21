@@ -1,4 +1,4 @@
-import { fetchFile, fetchTextFile, getPathName } from '../services/fs';
+import { escapeShortcut, fetchFile, fetchTextFile, getPathName } from '../services/fs';
 
 import fileIcon from '../assets/icons/jpg.png?url';
 import textIcon from '../assets/icons/txt.png?url';
@@ -14,6 +14,7 @@ import icon from '../assets/icons/background-capplet.png';
 import photoViewer from '../assets/icons/jpg.png';
 import { getFileType } from '../services/apps';
 import { basename } from 'path-browserify';
+import { parseBuffer as metaDataParseBuffer } from 'music-metadata/lib/core';
 
 export default {
   'Explorer': {
@@ -51,9 +52,19 @@ export default {
     thumbnail:async function (file) {
       const fileType = getFileType(file);
       if (['audio','video'].includes(fileType)) {
-        //todo fetch thumbnail from binary file
-        /*const buffer = await fetchFile(file);
-        return URL.createObjectURL(new Blob([buffer],));*/
+        try {
+          const path = await escapeShortcut(file);
+          const buffer = await fetchFile(path, { encode: 'unit8array' });
+          const data = await metaDataParseBuffer(new Uint8Array(buffer));
+          const common = data.common || {};
+          const pictures = common.picture || [];
+          if (pictures[0]) {
+            const cover = pictures[0];
+            return URL.createObjectURL(new Blob([cover.data],));
+          }
+        } catch (e) {
+          console.error(e);
+        }
       }
       return AudioFileIcon;
     }
