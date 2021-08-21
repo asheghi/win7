@@ -337,9 +337,9 @@ export default {
       imageContainerEl.addEventListener('mousedown', mouseDownHandler);
       imageContainerEl.addEventListener('wheel', (e) => {
         e.preventDefault();
-        if (e.deltaY > 0) {
+        if (e.deltaY < 0) {
           this.zoom = Math.min(100, this.zoom + this.zoom / 10);
-        }else if(e.deltaY < 0){
+        }else if(e.deltaY > 0){
           this.zoom = Math.max(1, this.zoom - this.zoom / 10);
         }
       });
