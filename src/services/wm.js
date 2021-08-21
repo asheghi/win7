@@ -106,15 +106,32 @@ function makeWindow(windowProperties, appName, fileType, filePath) {
   return win;
 }
 
+function getWinByName(appName) {
+  return windows.list.find(it => {
+    return it.appName === appName;
+  });
+}
+
 export async function openFile(filePath) {
   filePath = await escapeShortcut(filePath);
   const fileType = getFileType(filePath);
   const appName = await getAppForFilePath(filePath);
   let windowProperties = await calculateFileWindowProperties(filePath);
   windowProperties.appName = appName;
+  windowProperties.callbacks = {};
 
   if (fileType !== 'app') {
     windowProperties.filePath = filePath;
+  }
+
+  if (windowProperties.singleInstance) {
+    const win = getWinByName(appName);
+    if (win) {
+      if (win.callbacks && win.callbacks.openFile && typeof win.callbacks.openFile === 'function') {
+        win.callbacks.openFile(filePath);
+        return;
+      }
+    }
   }
 
   const win = makeWindow(windowProperties);

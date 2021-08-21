@@ -167,6 +167,7 @@ export default {
   ...props({
     filePath: props.obj(null),
     wmId: props.any(),
+    callbacks: props.any(),
   }),
   mounted() {
     this.fetchMediaFile();
@@ -202,6 +203,10 @@ export default {
     };
   },
   async created() {
+    this.callbacks.openFile = (file) => {
+      this.currentFile = file;
+      this.fetchMediaFile();
+    };
   },
   methods: {
     onEnd() {
@@ -243,12 +248,12 @@ export default {
         this.formattedCurrentTime = formatSeconds(this.$refs.audio.currentTime);
       };
       this.$refs.audio.ontimeupdate = debounce(updateProgress, 500, { maxWait: 500 });
-      this.$refs.audio.addEventListener('play', (val1, val2) => {
+      this.$refs.audio.onplay = () => {
         this.playing = true;
-      });
-      this.$refs.audio.addEventListener('pause', () => {
+      };
+      this.$refs.audio.onpause = () => {
         this.playing = false;
-      });
+      };
 
       this.$refs.audio.onended = () => {
         this.$refs.audio.currentTime = 0;
@@ -257,9 +262,9 @@ export default {
         }
       };
 
-      this.$refs.audio.addEventListener('durationchange', () => {
+      this.$refs.audio.ondurationchange = () => {
         this.duration = this.$refs.audio.duration;
-      });
+      };
     },
     seekTo(event) {
       const time = +event.target.value;
@@ -464,7 +469,7 @@ export default {
           fill: white;
         }
 
-        .shuffle,.repeat{
+        .shuffle, .repeat {
           display: none;
         }
 
@@ -500,6 +505,7 @@ export default {
 
         .repeat {
           margin-right: 8px;
+
           svg {
             margin-top: 4px;
             width: 20px;
@@ -702,16 +708,17 @@ export default {
     }
   }
 
-  &.w-medium,&.w-large{
-    .shuffle,.repeat{
-      display: flex!important;
+  &.w-medium, &.w-large {
+    .shuffle, .repeat {
+      display: flex !important;
     }
-    .volume-range{
-      display: block!important;
+
+    .volume-range {
+      display: block !important;
     }
   }
 
-   &.w-large {
+  &.w-large {
     .rounded-left, .rounded-right {
       display: flex !important;
     }

@@ -47,6 +47,7 @@ export default {
         maximizable: true,
         isSystemApp: true,
         taskbarTitle: !file || file.endsWith('.exe') ? 'Media Player' : basename(file),
+        singleInstance:true,
       });
     },
     thumbnail:async function (file) {
