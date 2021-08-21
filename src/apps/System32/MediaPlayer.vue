@@ -13,6 +13,7 @@
     <div class="controls">
       <div class="progress">
         <input type="range"
+               demo="colors"
                min="0"
                value="0"
                :max="duration"
@@ -24,18 +25,18 @@
         >
       </div>
       <div class="rounded-left">
-        {{this.formattedCurrentTime}}
+        {{ this.formattedCurrentTime }}
       </div>
       <div class="rounded">
         <div class="left">
-          <div class="shuffle">
+          <div class="shuffle" :class="{active:shuffle}" @click="shuffle = !shuffle">
             <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
               <path
                 d="M 37.978516 4.9804688 A 2.0002 2.0002 0 0 0 36.585938 8.4140625 L 39.171875 11 L 35.484375 11 C 33.363729 11 31.327803 11.842739 29.828125 13.34375 L 12.34375 30.828125 C 11.591958 31.57925 10.576979 32 9.515625 32 L 4 32 A 2.0002 2.0002 0 1 0 4 36 L 9.515625 36 C 11.636271 36 13.671667 35.157078 15.171875 33.658203 A 2.0002 2.0002 0 0 0 15.171875 33.65625 L 32.65625 16.171875 A 2.0002 2.0002 0 0 0 32.658203 16.171875 C 33.408478 15.420886 34.423021 15 35.484375 15 L 39.171875 15 L 36.585938 17.585938 A 2.0002 2.0002 0 1 0 39.414062 20.414062 L 45.414062 14.414062 A 2.0002 2.0002 0 0 0 45.414062 11.585938 L 39.414062 5.5859375 A 2.0002 2.0002 0 0 0 37.978516 4.9804688 z M 4 11 C 2.9 11 2 11.9 2 13 C 2 14.1 2.9 15 4 15 L 9.4296875 15 C 10.519688 15 11.580078 15.450234 12.330078 16.240234 L 17.390625 21.539062 L 20.220703 18.710938 L 15.220703 13.480469 C 13.720703 11.900469 11.609687 11 9.4296875 11 L 4 11 z M 27.119141 25.949219 L 24.300781 28.769531 L 29.779297 34.519531 C 31.279297 36.099531 33.390313 37 35.570312 37 L 39.171875 37 L 36.585938 39.585938 A 2.0002 2.0002 0 1 0 39.414062 42.414062 L 45.414062 36.414062 A 2.0002 2.0002 0 0 0 45.414062 33.585938 L 39.414062 27.585938 A 2.0002 2.0002 0 0 0 37.978516 26.980469 A 2.0002 2.0002 0 0 0 36.585938 30.414062 L 39.171875 33 L 35.570312 33 C 34.480312 33 33.419922 32.549766 32.669922 31.759766 L 27.119141 25.949219 z"
               ></path>
             </svg>
           </div>
-          <div class="repeat">
+          <div class="repeat" :class="{active : repeat}" @click="repeat = !repeat">
             <svg
               width="24"
               height="24"
@@ -85,7 +86,7 @@
         <div class="right">
           <div class="volume" @wheel="onVolumeWheelMove">
             <div @click="toggleMute" class="mute" v-if="volume === 0">
-              <svg  width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50">
+              <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50">
                 <path
                   d="M 24.1875 3 C 23.277344 3 22.332031 3.4375 21.5625 4.21875 L 9.9375 15.8125 C 9.296875 16.378906 9 17.476563 9 18.25 L 9 31.75 C 9 32.515625 9.316406 33.609375 9.90625 34.125 L 21.5 45.6875 C 22.554688 46.761719 23.527344 47 24.15625 47 C 25.824219 47 27 45.476563 27 43.3125 L 27 6.3125 C 27 4.035156 25.539063 3 24.1875 3 Z M 3 15.96875 C 1.324219 15.96875 -0.03125 17.324219 -0.03125 19 L -0.03125 31 C -0.03125 32.675781 1.324219 34.03125 3 34.03125 L 7.46875 34.03125 C 7.140625 33.246094 7 32.410156 7 31.75 L 7 18.25 C 7 17.59375 7.164063 16.761719 7.5 15.96875 Z M 31.90625 18.96875 C 31.863281 18.976563 31.820313 18.988281 31.78125 19 C 31.40625 19.066406 31.105469 19.339844 31 19.703125 C 30.894531 20.070313 31.003906 20.460938 31.28125 20.71875 L 35.5625 25 L 31.28125 29.28125 C 30.882813 29.679688 30.882813 30.320313 31.28125 30.71875 C 31.679688 31.117188 32.320313 31.117188 32.71875 30.71875 L 37 26.4375 L 41.28125 30.71875 C 41.679688 31.117188 42.320313 31.117188 42.71875 30.71875 C 43.117188 30.320313 43.117188 29.679688 42.71875 29.28125 L 38.4375 25 L 42.71875 20.71875 C 43.042969 20.417969 43.128906 19.941406 42.933594 19.546875 C 42.742188 19.148438 42.308594 18.929688 41.875 19 C 41.652344 19.023438 41.441406 19.125 41.28125 19.28125 L 37 23.5625 L 32.71875 19.28125 C 32.511719 19.058594 32.210938 18.945313 31.90625 18.96875 Z"
                 ></path>
@@ -98,7 +99,7 @@
                 ></path>
               </svg>
             </div>
-            <div @click="toggleMute" class="medium"  v-if="volume >= .3 && volume <= .6">
+            <div @click="toggleMute" class="medium" v-if="volume >= .3 && volume <= .6">
               <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50">
                 <path
                   d="M 24.1875 3 C 23.277344 3 22.332031 3.4375 21.5625 4.21875 L 9.9375 15.8125 C 9.296875 16.378906 9 17.476563 9 18.25 L 9 31.75 C 9 32.515625 9.316406 33.605469 9.90625 34.125 L 21.5 45.6875 C 22.554688 46.757813 23.527344 47 24.15625 47 C 25.824219 47 27 45.476563 27 43.3125 L 27 6.3125 C 27 4.035156 25.539063 3 24.1875 3 Z M 34.71875 12.125 C 34.273438 12.179688 33.917969 12.527344 33.855469 12.972656 C 33.789063 13.414063 34.027344 13.847656 34.4375 14.03125 C 38.339844 16.136719 41 20.246094 41 25 C 41 29.738281 38.351563 33.859375 34.46875 35.96875 C 33.984375 36.234375 33.808594 36.84375 34.078125 37.328125 C 34.34375 37.8125 34.953125 37.988281 35.4375 37.71875 C 39.945313 35.269531 43 30.484375 43 25 C 43 19.5 39.9375 14.695313 35.40625 12.25 C 35.226563 12.148438 35.019531 12.105469 34.8125 12.125 C 34.78125 12.125 34.75 12.125 34.71875 12.125 Z M 3 15.96875 C 1.324219 15.96875 -0.03125 17.324219 -0.03125 19 L -0.03125 31 C -0.03125 32.675781 1.324219 34.03125 3 34.03125 L 7.46875 34.03125 C 7.140625 33.246094 7 32.410156 7 31.75 L 7 18.25 C 7 17.59375 7.164063 16.761719 7.5 15.96875 Z M 30.53125 18.40625 C 30.046875 18.464844 29.679688 18.863281 29.65625 19.351563 C 29.632813 19.835938 29.960938 20.269531 30.4375 20.375 C 32.484375 20.910156 34 22.777344 34 25 C 34 27.222656 32.484375 29.089844 30.4375 29.625 C 29.902344 29.761719 29.582031 30.308594 29.71875 30.84375 C 29.855469 31.378906 30.402344 31.699219 30.9375 31.5625 C 33.851563 30.800781 36 28.136719 36 25 C 36 21.863281 33.847656 19.199219 30.9375 18.4375 C 30.804688 18.398438 30.667969 18.390625 30.53125 18.40625 Z"
@@ -113,7 +114,9 @@
               </svg>
             </div>
           </div>
-          <input class="volume-range" type="range" min="0" max="1" step="0.05" v-model="volume" @change="onVolumeChange">
+          <input class="volume-range" type="range" min="0" max="1" step="0.05" v-model="volume"
+                 @change="onVolumeChange"
+          >
         </div>
       </div>
       <div class="rounded-right">
@@ -183,6 +186,8 @@ export default {
       coverImage: null,
       lastVolume: null,
       formattedCurrentTime: '00:00',
+      repeat: true,
+      shuffle: false,
     };
   },
   async created() {
@@ -245,6 +250,13 @@ export default {
         this.playing = false;
       });
 
+      this.$refs.audio.onended = () =>{
+        this.media.currentTime = 0;
+        if (this.repeat) {
+          this.media.play();
+        }
+      }
+
       this.media.addEventListener('durationchange', () => {
         this.duration = this.$refs.audio.duration;
       });
@@ -286,17 +298,17 @@ export default {
       if (e.deltaY < 0) {
         //go up
         newVal = vol + .1;
-      }else if(e.deltaY > 0){
+      } else if (e.deltaY > 0) {
         //go down
         newVal = vol - .1;
       }
       if (newVal > 1) {
         newVal = 1;
-      }else if (newVal < 0) {
+      } else if (newVal < 0) {
         newVal = 0;
       }
       this.$refs.audio.volume = newVal;
-      this.volume = this.$refs.audio.volume
+      this.volume = this.$refs.audio.volume;
     },
     toggleMute() {
       const media = this.$refs.audio;
@@ -375,7 +387,7 @@ export default {
   }
 
   &:hover {
-    .controls,.shadow-controls {
+    .controls, .shadow-controls {
       opacity: 1;
     }
   }
@@ -403,7 +415,7 @@ export default {
       margin: 0 12px;
       background: rgba(white, .15);
       border-radius: 32px;
-      height: 32px;
+      height: 36px;
       display: flex;
 
       min-width: 320px;
@@ -413,7 +425,7 @@ export default {
 
       .left {
         padding: 0 12px;
-        min-width: 110px;
+        width: 120px;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -422,19 +434,46 @@ export default {
           fill: white;
         }
 
+        .shuffle,.repeat,.stop{
+          padding: 4px;
+          background: transparent;
+          transition: background ease-in 360ms;
+        }
+
         .shuffle {
           transform: rotate(-90deg);
 
           svg {
             width: 20px;
             height: 20px;
+            transform: scaleY(1.2);
+          }
+
+          &.active{
+            background: radial-gradient(circle,
+              rgba(255,255,255,0.5212270329507549) 0%,
+              rgba(0, 115, 203, 0.51) 32%,
+              rgba(255,255,255,0) 70%);
+          }
+        }
+
+        .stop{
+          svg{
+            margin-top: 4px;
           }
         }
 
         .repeat {
           svg {
-            width: 18px;
-            height: 18px;
+            margin-top: 4px;
+            width: 20px;
+            height: 20px;
+          }
+          &.active{
+            background: radial-gradient(circle,
+              rgba(255,255,255,0.5212270329507549) 0%,
+              rgba(0, 115, 203, 0.51) 22%,
+              rgba(255,255,255,0) 70%);
           }
         }
       }
@@ -535,6 +574,7 @@ export default {
       }
 
       .right {
+        width: 120px;
         padding: 0 12px;
         display: flex;
         justify-content: space-around;
@@ -590,7 +630,7 @@ export default {
     right: 0;
     height: 100px;
     background: linear-gradient(0,
-      rgba(black,.95) 0%,
+      rgba(black, .95) 0%,
       rgba(black, 0) 100%
     );
   }
