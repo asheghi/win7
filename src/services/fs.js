@@ -8,6 +8,9 @@ const emitter = new EventEmitter2({ wildcard: true });
 
 let fs = {};
 
+const Buffer = BrowserFS.BFSRequire('buffer').Buffer;
+window.Buffer = Buffer;
+
 export async function initFS() {
   fs = await getFS();
   await populateFS();

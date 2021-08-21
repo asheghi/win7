@@ -4,8 +4,11 @@
 
     </div>
     <div class="media-container">
-      <img src="https://via.placeholder.com/300x300" alt="">
+      <img class="coverImage" v-if="coverImage" :src="coverImage" alt="">
       <video name="media" controls="controls" ref="audio"></video>
+    </div>
+    <div class="shadow-controls">
+
     </div>
     <div class="controls">
       <div class="progress">
@@ -63,10 +66,10 @@
             </svg>
           </div>
           <div class="play" @click="togglePlayPause">
-            <div class="image" alt="" >
-                <img class="idle" :src="playing ? Pause : PlayIdle" alt="">
-                <img class="hover" :src="playing ? Pause : PlayIdle" alt="">
-                <img class="active" :src="playing ? Pause : PlayIdle" alt="">
+            <div class="image" alt="">
+              <img class="idle" :src="playing ? Pause : PlayIdle" alt="">
+              <img class="hover" :src="playing ? Pause : PlayIdle" alt="">
+              <img class="active" :src="playing ? Pause : PlayIdle" alt="">
             </div>
           </div>
           <div class="next">
@@ -144,6 +147,7 @@ import PlayMuted from '../../assets/icons/media-player/play-muted.png';
 import WallPaper from '../../assets/images/wmp_12_wallpaper.jpg';
 import Pause from '../../assets/icons/media-player/pause.png';
 import debounce from 'lodash.debounce';
+import { parseBuffer as metaDataParseBuffer } from 'music-metadata';
 
 const ffmpeg = createFFmpeg({ log: false });
 
@@ -175,6 +179,7 @@ export default {
       playing: false,
       seeking: false,
       duration: 1800,
+      coverImage: null
     };
   },
   async created() {
@@ -207,6 +212,8 @@ export default {
 
           this.initMedia();
 
+          this.getMetaData(buffer);
+
           try {
             await video.play();
           } catch (e) {
@@ -225,17 +232,17 @@ export default {
           this.$refs.progress.value = this.media.currentTime;
         }
       };
-      this.media.ontimeupdate = debounce(updateProgress, 500, { maxWait: 500 })
-      this.media.addEventListener('play', (val1,val2) => {
+      this.media.ontimeupdate = debounce(updateProgress, 500, { maxWait: 500 });
+      this.media.addEventListener('play', (val1, val2) => {
         this.playing = true;
       });
-      this.media.addEventListener('pause',() =>{
+      this.media.addEventListener('pause', () => {
         this.playing = false;
       });
 
-      this.media.addEventListener('durationchange',() =>{
+      this.media.addEventListener('durationchange', () => {
         this.duration = this.$refs.audio.duration;
-      })
+      });
     },
     seekTo(event) {
       const time = +event.target.value;
@@ -249,10 +256,21 @@ export default {
     togglePlayPause() {
       if (this.$refs.audio.paused) {
         this.$refs.audio.play();
-      }else{
+      } else {
         this.$refs.audio.pause();
       }
     },
+    async getMetaData(buffer) {
+      const data = await metaDataParseBuffer(new Uint8Array(buffer));
+      const common = data.common || {};
+      const pictures = common.picture || [];
+      if (pictures[0]) {
+
+        const cover = pictures[0];
+        this.coverImage = URL.createObjectURL(new Blob([cover.data],));
+      }
+      console.log('data:', data);
+    }
   },
   style({ className }) {
     return [
@@ -304,7 +322,9 @@ export default {
     height: 100%;
     min-height: 300px;
 
-    image {
+    .coverImage {
+      max-width: 100%;
+      max-height: 100%;
       min-width: 300px;
       min-height: 300px;
     }
@@ -317,7 +337,7 @@ export default {
   }
 
   &:hover {
-    .controls {
+    .controls,.shadow-controls {
       opacity: 1;
     }
   }
@@ -329,7 +349,7 @@ export default {
     width: 100%;
 
     transition: opacity ease-in 160ms;
-    opacity: 0.5;
+    opacity: 0;
 
     display: flex;
     justify-content: center;
@@ -521,6 +541,19 @@ export default {
     input {
       width: 100%;
     }
+  }
+
+  .shadow-controls {
+    opacity: 0;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 100px;
+    background: linear-gradient(0,
+      rgba(black,.95) 0%,
+      rgba(black, 0) 100%
+    );
   }
 }
 </style>
