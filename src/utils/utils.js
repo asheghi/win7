@@ -69,3 +69,24 @@ export function encode(input) {
   }
   return output;
 }
+
+export function formatSeconds(d) {
+  d = Number(d);
+
+  let it = '';
+  let h = Math.floor(d / 3600);
+  let m = Math.floor(d % 3600 / 60);
+  let s = Math.floor(d % 3600 % 60);
+
+  let hDisplay = h > 0 ? formatNumberInDigits(h,2) + ':' : "";
+  let mDisplay = m > 0 ? formatNumberInDigits(m,2) + ':' : "00:";
+  let sDisplay = s > 0 ? formatNumberInDigits(s,2) : "00";
+  return hDisplay + mDisplay + sDisplay;
+}
+
+export function formatNumberInDigits(number,digits){
+  return number.toLocaleString('en-US', {
+    minimumIntegerDigits: digits,
+    useGrouping: false
+  })
+}

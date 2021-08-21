@@ -40,8 +40,8 @@ export default {
     windowProperties: async (file) => {
       return ({
         icon: MediaPlayerIcon,
-        height: 300,
-        width:300,
+        height: 600,
+        width:600,
         resizable: true,
         maximizable: true,
         isSystemApp: true,
