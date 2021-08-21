@@ -159,6 +159,7 @@ import Pause from '../../assets/icons/media-player/pause.png';
 import debounce from 'lodash.debounce';
 import { parseBuffer as metaDataParseBuffer } from 'music-metadata';
 import { formatSeconds } from '../../utils/utils';
+import {basename} from 'path-browserify'
 
 const ffmpeg = createFFmpeg({ log: false });
 
@@ -290,7 +291,11 @@ export default {
         const cover = pictures[0];
         this.coverImage = URL.createObjectURL(new Blob([cover.data],));
       }
-      this.title = `${common.artist} - ${common.title}`;
+      if (common.artist && common.title) {
+        this.title = `${common.artist} - ${common.title}`;
+      }else{
+        this.title = basename(this.currentFile);
+      }
       this.album = common.album;
 
       this.$wm.updateToolbarTitle(this.wmId, this.title);
