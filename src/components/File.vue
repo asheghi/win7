@@ -208,6 +208,7 @@ export default {
         '& > .name': {
           width: '100%',
           maxWidth: '100%',
+          maxHeight: '2.5em',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           padding: '3px',
