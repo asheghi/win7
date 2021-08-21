@@ -72,7 +72,6 @@ export const calculateFileWindowProperties = async (filePath) => {
   const width = getOr(windowProperties.width, 400);
   const height = getOr(windowProperties.height, 400);
   const hidden = getOr(windowProperties.hidden, false);
-  console.log('check with', width, height);
   if (!hidden) {
     latestZIndex += 1;
   }

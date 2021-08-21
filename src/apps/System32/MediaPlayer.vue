@@ -199,7 +199,6 @@ export default {
 
     },
     async fetchMediaFile() {
-      console.log('fetching file:', this.filePath);
       if (true) {
         this.loading = true;
         this.src = null;
@@ -249,7 +248,7 @@ export default {
       if (this.media.seekable) {
         this.media.currentTime = time;
       } else {
-        console.log('cannot seek');
+        console.error('cannot seek');
       }
     },
 
@@ -269,7 +268,6 @@ export default {
         const cover = pictures[0];
         this.coverImage = URL.createObjectURL(new Blob([cover.data],));
       }
-      console.log('data:', data);
     }
   },
   style({ className }) {
