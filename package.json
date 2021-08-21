@@ -20,6 +20,7 @@
     "file-type": "^16.5.3",
     "image-js": "^0.32.0",
     "jsmediatags": "^3.9.7",
+    "lodash.debounce": "^4.0.8",
     "path-browserify": "^1.0.1",
     "vue": "^3.0.5",
     "vue-component-style": "^1.1.0"

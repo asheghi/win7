@@ -7,10 +7,19 @@
       <img src="https://via.placeholder.com/300x300" alt="">
       <video name="media" controls="controls" ref="audio"></video>
     </div>
-    <div class="progress">
-      <input type="range" min="0" :max="maxProgress">
-    </div>
     <div class="controls">
+      <div class="progress">
+        <input type="range"
+               min="0"
+               value="0"
+               :max="duration"
+               ref="progress"
+               @change="seekTo($event)"
+               @mousedown="seeking = true"
+               @mouseup="seeking = false"
+               @mouseleave="seeking = false"
+        >
+      </div>
       <div class="rounded-left">
         00:05
       </div>
@@ -53,11 +62,11 @@
               ></path>
             </svg>
           </div>
-          <div class="play">
-            <div class="image" alt="">
-              <img class="idle" :src="PlayIdle" alt="">
-              <img class="hover" :src="PlayHover" alt="">
-              <img class="active" :src="PlayMuted" alt="">
+          <div class="play" @click="togglePlayPause">
+            <div class="image" alt="" >
+                <img class="idle" :src="playing ? Pause : PlayIdle" alt="">
+                <img class="hover" :src="playing ? Pause : PlayIdle" alt="">
+                <img class="active" :src="playing ? Pause : PlayIdle" alt="">
             </div>
           </div>
           <div class="next">
@@ -133,6 +142,8 @@ import PlayIdle from '../../assets/icons/media-player/play-idle.png';
 import PlayHover from '../../assets/icons/media-player/play-hover.png';
 import PlayMuted from '../../assets/icons/media-player/play-muted.png';
 import WallPaper from '../../assets/images/wmp_12_wallpaper.jpg';
+import Pause from '../../assets/icons/media-player/pause.png';
+import debounce from 'lodash.debounce';
 
 const ffmpeg = createFFmpeg({ log: false });
 
@@ -156,10 +167,14 @@ export default {
       PlayIdle,
       PlayHover,
       PlayMuted,
+      Pause,
       volume: 90,
       fullScreen: false,
-      //seconds
-      maxProgress: 1800,
+      media: {},
+      currentTime: 0,
+      playing: false,
+      seeking: false,
+      duration: 1800,
     };
   },
   async created() {
@@ -190,6 +205,8 @@ export default {
           const video = this.$refs.audio;
           video.src = URL.createObjectURL(new Blob([buffer],));
 
+          this.initMedia();
+
           try {
             await video.play();
           } catch (e) {
@@ -200,7 +217,42 @@ export default {
           this.loading = false;
         }
       }
-    }
+    },
+    initMedia() {
+      this.media = this.$refs.audio;
+      const updateProgress = () => {
+        if (!this.seeking) {
+          this.$refs.progress.value = this.media.currentTime;
+        }
+      };
+      this.media.ontimeupdate = debounce(updateProgress, 500, { maxWait: 500 })
+      this.media.addEventListener('play', (val1,val2) => {
+        this.playing = true;
+      });
+      this.media.addEventListener('pause',() =>{
+        this.playing = false;
+      });
+
+      this.media.addEventListener('durationchange',() =>{
+        this.duration = this.$refs.audio.duration;
+      })
+    },
+    seekTo(event) {
+      const time = +event.target.value;
+      if (this.media.seekable) {
+        this.media.currentTime = time;
+      } else {
+        console.log('cannot seek');
+      }
+    },
+
+    togglePlayPause() {
+      if (this.$refs.audio.paused) {
+        this.$refs.audio.play();
+      }else{
+        this.$refs.audio.pause();
+      }
+    },
   },
   style({ className }) {
     return [
@@ -212,6 +264,9 @@ export default {
     ];
   },
   computed: {
+    durationSeconds() {
+      return this.media.duration;
+    },
     mediaPlayerStyle() {
       return {
         backgroundImage: `url("${WallPaper}")`,
@@ -248,6 +303,7 @@ export default {
     align-items: center;
     height: 100%;
     min-height: 300px;
+
     image {
       min-width: 300px;
       min-height: 300px;
@@ -260,11 +316,12 @@ export default {
     }
   }
 
-  &:hover{
-    .controls{
+  &:hover {
+    .controls {
       opacity: 1;
     }
   }
+
   .controls {
     position: absolute;
     bottom: 0;
@@ -272,7 +329,7 @@ export default {
     width: 100%;
 
     transition: opacity ease-in 160ms;
-    opacity: 0;
+    opacity: 0.5;
 
     display: flex;
     justify-content: center;
@@ -348,6 +405,8 @@ export default {
             position: relative;
 
             img {
+              width: 54px;
+              height: 54px;
               position: absolute;
               transition: opacity ease-in 100ms;
             }
@@ -449,6 +508,18 @@ export default {
       svg {
         fill: white;
       }
+    }
+  }
+
+  .progress {
+    position: absolute;
+    bottom: 54px;
+    left: 0;
+    right: 0;
+    padding: 4px 16px;
+
+    input {
+      width: 100%;
     }
   }
 }
