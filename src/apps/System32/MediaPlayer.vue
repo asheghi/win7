@@ -1,12 +1,10 @@
 <template>
-  <div class="MediaPlayer" :style="mediaPlayerStyle">
+  <div class="MediaPlayer" :style="mediaPlayerStyle" :class="mediaPlayerClass()" ref="container">
     <div class="media-container">
       <img class="coverImage" v-if="coverImage" :src="coverImage" alt="">
       <video name="media" controls="controls" ref="audio"></video>
     </div>
-    <div class="shadow-controls">
-
-    </div>
+    <div class="shadow-controls"></div>
     <div class="controls">
       <div class="progress">
         <input type="range"
@@ -47,7 +45,7 @@
           <!--          <div class="divider">
 
                     </div>-->
-          <div class="stop">
+          <div class="stop" @click="onStopClicked">
             <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30">
               <path
                 d="M22,6H8C6.895,6,6,6.895,6,8v14c0,1.105,0.895,2,2,2h14c1.105,0,2-0.895,2-2V8C24,6.895,23.105,6,22,6z"
@@ -112,6 +110,7 @@
             </div>
           </div>
           <input class="volume-range" type="range" min="0" max="1" step="0.05" v-model="volume"
+                 @wheel="onVolumeWheelMove"
                  @change="onVolumeChange"
           >
         </div>
@@ -133,7 +132,14 @@
         </div>
       </div>
     </div>
-
+    <div class="shadow-top">
+      <div class="title">
+        {{ title }}
+      </div>
+      <div class="album">
+        {{ album }}
+      </div>
+    </div>
     <div class="loading" v-if="loading">
       <h1>Loading ...</h1>
     </div>
@@ -164,6 +170,7 @@ export default {
   }),
   mounted() {
     this.fetchMediaFile();
+    new ResizeObserver(this.debouncedResize).observe(this.$refs.container);
   },
   data() {
     return {
@@ -189,6 +196,9 @@ export default {
       formattedCurrentTime: '00:00',
       repeat: true,
       shuffle: false,
+      title: '',
+      album: '',
+      debouncedResize: debounce(this.onContainerResize, 250),
     };
   },
   async created() {
@@ -224,38 +234,37 @@ export default {
       }
     },
     initMedia() {
-      this.media = this.$refs.audio;
-      this.volume = this.media.volume;
+      this.volume = this.$refs.audio.volume;
 
       const updateProgress = () => {
-        if (!this.seeking) {
-          this.$refs.progress.value = this.media.currentTime;
+        if (!this.seeking && this.$refs.audio) {
+          this.$refs.progress.value = this.$refs.audio.currentTime;
         }
-        this.formattedCurrentTime = formatSeconds(this.media.currentTime);
+        this.formattedCurrentTime = formatSeconds(this.$refs.audio.currentTime);
       };
-      this.media.ontimeupdate = debounce(updateProgress, 500, { maxWait: 500 });
-      this.media.addEventListener('play', (val1, val2) => {
+      this.$refs.audio.ontimeupdate = debounce(updateProgress, 500, { maxWait: 500 });
+      this.$refs.audio.addEventListener('play', (val1, val2) => {
         this.playing = true;
       });
-      this.media.addEventListener('pause', () => {
+      this.$refs.audio.addEventListener('pause', () => {
         this.playing = false;
       });
 
-      this.$refs.audio.onended = () =>{
-        this.media.currentTime = 0;
+      this.$refs.audio.onended = () => {
+        this.$refs.audio.currentTime = 0;
         if (this.repeat) {
-          this.media.play();
+          this.$refs.audio.play();
         }
-      }
+      };
 
-      this.media.addEventListener('durationchange', () => {
+      this.$refs.audio.addEventListener('durationchange', () => {
         this.duration = this.$refs.audio.duration;
       });
     },
     seekTo(event) {
       const time = +event.target.value;
-      if (this.media.seekable) {
-        this.media.currentTime = time;
+      if (this.$refs.audio.seekable) {
+        this.$refs.audio.currentTime = time;
       } else {
         console.error('cannot seek');
       }
@@ -273,10 +282,13 @@ export default {
       const common = data.common || {};
       const pictures = common.picture || [];
       if (pictures[0]) {
-
         const cover = pictures[0];
         this.coverImage = URL.createObjectURL(new Blob([cover.data],));
       }
+      this.title = `${common.artist} - ${common.title}`;
+      this.album = common.album;
+
+      this.$wm.updateToolbarTitle(this.wmId, this.title);
     },
     onVolumeChange($event) {
       this.$refs.audio.volume = +$event.target.value;
@@ -311,6 +323,22 @@ export default {
       }
       media.volume = media.volume > 0 ? 0 : this.lastVolume;
       this.volume = media.volume;
+    },
+    onContainerResize() {
+      if (this.$refs.container) {
+        this.containerWidth = this.$refs.container.clientWidth;
+      }
+    },
+    mediaPlayerClass() {
+      let c = '';
+      if (this.containerWidth < 450) {
+        c += ' w-small ';
+      } else if (this.containerWidth >= 450 && this.containerWidth < 580) {
+        c += ' w-medium ';
+      } else {
+        c += ' w-large ';
+      }
+      return c;
     }
   },
   style({ className }) {
@@ -324,7 +352,7 @@ export default {
   },
   computed: {
     durationSeconds() {
-      return this.media.duration;
+      return this.$refs.audio.duration;
     },
     mediaPlayerStyle() {
       return {
@@ -333,8 +361,15 @@ export default {
         '--play-click': `url("${PlayNormal}")`,
         '--play-idle': `url("${PlayIdle}")`,
       };
-    }
-  }
+    },
+    onStopClicked() {
+      this.$refs.audio.pause();
+      this.$nextTick(() => {
+        this.$refs.audio.currentTime = 0;
+        this.$refs.progress.value = '0';
+      });
+    },
+  },
 };
 </script>
 <style lang="scss">
@@ -367,6 +402,7 @@ export default {
     min-height: 300px;
 
     .coverImage {
+      z-index: 0;
       max-width: 100%;
       max-height: 100%;
       min-width: 300px;
@@ -381,7 +417,7 @@ export default {
   }
 
   &:hover {
-    .controls, .shadow-controls {
+    .controls, .shadow-controls, .shadow-top {
       opacity: 1;
     }
   }
@@ -399,42 +435,47 @@ export default {
     justify-content: center;
 
     .rounded-left, .rounded-right {
-      display: flex;
       align-items: center;
       height: 24px;
       margin-top: 2px;
+
+      display: none;
     }
 
     .rounded {
-      margin: 0 12px;
+      margin: 0 16px;
       background: rgba(white, .15);
       border-radius: 32px;
       height: 36px;
       display: flex;
 
-      min-width: 320px;
+      min-width: 260px;
 
       display: flex;
       justify-content: center;
 
       .left {
-        padding: 0 12px;
         width: 120px;
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        justify-content: center;
 
         svg {
           fill: white;
         }
 
-        .shuffle,.repeat,.stop{
+        .shuffle,.repeat{
+          display: none;
+        }
+
+        .shuffle, .repeat, .stop {
           padding: 4px;
           background: transparent;
           transition: background ease-in 360ms;
         }
 
         .shuffle {
+          margin-right: 8px;
           transform: rotate(-90deg);
 
           svg {
@@ -443,31 +484,33 @@ export default {
             transform: scaleY(1.2);
           }
 
-          &.active{
+          &.active {
             background: radial-gradient(circle,
-              rgba(255,255,255,0.5212270329507549) 0%,
+              rgba(255, 255, 255, 0.5212270329507549) 0%,
               rgba(0, 115, 203, 0.51) 32%,
-              rgba(255,255,255,0) 70%);
+              rgba(255, 255, 255, 0) 70%);
           }
         }
 
-        .stop{
-          svg{
+        .stop {
+          svg {
             margin-top: 4px;
           }
         }
 
         .repeat {
+          margin-right: 8px;
           svg {
             margin-top: 4px;
             width: 20px;
             height: 20px;
           }
-          &.active{
+
+          &.active {
             background: radial-gradient(circle,
-              rgba(255,255,255,0.5212270329507549) 0%,
+              rgba(255, 255, 255, 0.5212270329507549) 0%,
               rgba(0, 115, 203, 0.51) 22%,
-              rgba(255,255,255,0) 70%);
+              rgba(255, 255, 255, 0) 70%);
           }
         }
       }
@@ -569,13 +612,13 @@ export default {
 
       .right {
         width: 120px;
-        padding: 0 12px;
         display: flex;
         justify-content: space-around;
         align-items: center;
 
         .volume {
-          margin-right: 12px;
+          margin-right: 6px;
+          margin-left: 8px;
           display: flex;
           min-width: 24px;
 
@@ -587,13 +630,14 @@ export default {
         }
 
         .volume-range {
-          width: 70px;
+          display: none;
+          width: 60px;
+          margin-right: 12px;
         }
       }
     }
 
     .rounded-right {
-      display: flex;
       justify-content: end;
       margin-left: 12px;
 
@@ -615,6 +659,7 @@ export default {
     }
   }
 
+
   .shadow-controls {
     transition: opacity ease-in 360ms;
     opacity: 0;
@@ -625,8 +670,51 @@ export default {
     height: 100px;
     background: linear-gradient(0,
       rgba(black, .95) 0%,
+      rgba(black, .6) 70%,
       rgba(black, 0) 100%
     );
+  }
+
+  .shadow-top {
+    transition: opacity ease-in 360ms;
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    height: 100px;
+    background: linear-gradient(180deg,
+      rgba(black, 1) 0%,
+      rgba(black, .8) 20%,
+      rgba(black, 0) 100%
+    );
+    padding-left: 16px;
+    padding-top: 6px;
+
+    .title, .album {
+      margin-top: 6px;
+      overflow: hidden;
+      text-transform: capitalize;
+      max-width: 100%;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  &.w-medium,&.w-large{
+    .shuffle,.repeat{
+      display: flex!important;
+    }
+    .volume-range{
+      display: block!important;
+    }
+  }
+
+   &.w-large {
+    .rounded-left, .rounded-right {
+      display: flex !important;
+    }
   }
 }
 </style>
