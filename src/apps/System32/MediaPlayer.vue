@@ -1,8 +1,5 @@
 <template>
   <div class="MediaPlayer" :style="mediaPlayerStyle">
-    <div class="loading" v-if="loading">
-
-    </div>
     <div class="media-container">
       <img class="coverImage" v-if="coverImage" :src="coverImage" alt="">
       <video name="media" controls="controls" ref="audio"></video>
@@ -136,6 +133,10 @@
         </div>
       </div>
     </div>
+
+    <div class="loading" v-if="loading">
+      <h1>Loading ...</h1>
+    </div>
   </div>
 </template>
 
@@ -168,7 +169,7 @@ export default {
     return {
       src: null,
       currentFile: this.filePath,
-      loading: false,
+      loading: true,
       images: [],
       imageHasListener: false,
       PlayNormal,
@@ -191,16 +192,6 @@ export default {
     };
   },
   async created() {
-    if (this.filePath) {
-      this.loading = true;
-      try {
-        this.data = await this.$fs.fetchTextFile(this.filePath);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        this.loading = false;
-      }
-    }
   },
   methods: {
     onEnd() {
@@ -363,6 +354,9 @@ export default {
     display: flex;
     justify-content: center;
     align-items: center;
+
+    color: white;
+    font-size: 22px;
   }
 
   .media-container {
