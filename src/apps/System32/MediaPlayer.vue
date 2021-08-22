@@ -329,9 +329,9 @@ export default {
     onVolumeWheelMove(e) {
       e.preventDefault();
       if (e.deltaY < 0) {
-        this.modifyVolume(true)
+        this.modifyVolume(true);
       } else if (e.deltaY > 0) {
-        this.modifyVolume(false)
+        this.modifyVolume(false);
       }
     },
     toggleMute() {
@@ -382,32 +382,32 @@ export default {
           this.togglePlayPause();
         }
         if (code === 'Escape') {
-          if(this.fullScreen) this.toggleFullscreen();
+          if (this.fullScreen) this.toggleFullscreen();
         }
         if (code === 'KeyM') {
           this.toggleMute();
         }
-        if(code === 'Enter'){
+        if (code === 'Enter') {
           this.toggleFullscreen();
         }
-        if(code === 'KeyN'){
+        if (code === 'KeyN') {
           this.playNext();
         }
-        if(code === 'KeyP'){
+        if (code === 'KeyP') {
           this.playPrev();
         }
-        if(code === 'KeyS'){
+        if (code === 'KeyS') {
           this.shuffle = !Boolean(this.shuffle);
         }
-        if(code === 'KeyR'){
+        if (code === 'KeyR') {
           this.repeat = !Boolean(this.repeat);
         }
-        if(code === 'ArrowRight'){
-          const curretnTime = this.getCurrentTime()
+        if (code === 'ArrowRight') {
+          const curretnTime = this.getCurrentTime();
           this.seekTo(curretnTime + 10);
         }
-        if(code === 'ArrowLeft'){
-          const curretnTime = this.getCurrentTime()
+        if (code === 'ArrowLeft') {
+          const curretnTime = this.getCurrentTime();
           this.seekTo(curretnTime - 10);
         }
         if (code === 'ArrowUp') {
@@ -417,7 +417,21 @@ export default {
           this.modifyVolume(false);
         }
       };
-      this.$refs.wrapper.addEventListener('keydown', onkeydown);
+      this.$refs.wrapper.onkeydown = onkeydown;
+
+      this.$refs.wrapper.addEventListener('dragover',(e) => {
+        e.preventDefault();
+      },{ capture: true})
+
+      this.$refs.wrapper.addEventListener('drop',(e) => {
+        e.preventDefault();
+        const userData = event.dataTransfer.getData('text');
+        if (userData) {
+          const [first] = JSON.parse(userData);
+          this.callbacks.openFile(first);
+        }
+      },{capture:true})
+
     },
     toggleFullscreen() {
       this.fullScreen = !Boolean(this.fullScreen);
@@ -430,7 +444,7 @@ export default {
       let newVal = this.$refs.audio.volume;
       if (goUp) {
         newVal = vol + .1;
-      } else{
+      } else {
         //go down
         newVal = vol - .1;
       }
