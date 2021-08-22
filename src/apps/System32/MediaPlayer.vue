@@ -459,6 +459,10 @@ export default {
     },
     nextFile() {
       if (!this.siblings || !this.siblings.length) return null;
+      if (this.shuffle && this.siblings.length > 1) {
+        const others = this.siblings.filter(it => it !== this.currentFile);
+        return others[Math.floor(Math.random() * others.length)];
+      }
       if (this.indexInSiblings !== this.siblings.length - 1) {
         return this.siblings[this.indexInSiblings + 1];
       } else {
@@ -467,6 +471,10 @@ export default {
     },
     prevFile() {
       if (!this.siblings || !this.siblings.length) return null;
+      if (this.shuffle && this.siblings.length > 1) {
+        const others = this.siblings.filter(it => it !== this.currentFile);
+        return others[Math.floor(Math.random() * others.length)];
+      }
       if (this.indexInSiblings !== 0) {
         return this.siblings[this.indexInSiblings - 1];
       } else {
