@@ -9,6 +9,7 @@
     ]"
     :style="{ zIndex: window.zIndex }"
     @click.capture="focus"
+    :id="'win-'+window.id"
   >
     <div :class="$style.titlebar">
       <div
