@@ -1,8 +1,11 @@
 <template>
   <div class="MediaPlayer" :style="mediaPlayerStyle" :class="mediaPlayerClass()" ref="container">
     <div class="media-container">
-      <img class="coverImage" v-if="coverImage" :src="coverImage" alt="">
-      <video name="media" controls="controls" ref="audio"></video>
+      <img :class="' ' + fileType + ' '"  class="coverImage" v-if="coverImage" :src="coverImage" alt="">
+      <video
+        :class="' ' + fileType + ' '"
+        name="media"
+        ref="audio"></video>
     </div>
     <div class="shadow-controls"></div>
     <div class="controls">
@@ -54,7 +57,7 @@
           </div>
         </div>
         <div class="center">
-          <div class="previous">
+          <div class="previous" @click="playPrev">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
               <path
                 d="M 4 6 C 3.448 6 3 6.448 3 7 L 3 17 C 3 17.552 3.448 18 4 18 C 4.552 18 5 17.552 5 17 L 5 7 C 5 6.448 4.552 6 4 6 z M 11.949219 6.9296875 C 11.770297 6.9383906 11.589578 6.9962813 11.423828 7.1132812 L 5.65625 11.183594 C 5.09225 11.581594 5.09225 12.418406 5.65625 12.816406 L 11.423828 16.886719 C 12.086828 17.354719 13 16.881312 13 16.070312 L 13 7.9296875 C 13 7.3214375 12.485984 6.9035781 11.949219 6.9296875 z M 19.949219 6.9296875 C 19.770297 6.9383906 19.589578 6.9962813 19.423828 7.1132812 L 13.65625 11.183594 C 13.09225 11.581594 13.09225 12.418406 13.65625 12.816406 L 19.423828 16.886719 C 20.086828 17.354719 21 16.881312 21 16.070312 L 21 7.9296875 C 21 7.3214375 20.485984 6.9035781 19.949219 6.9296875 z"
@@ -68,7 +71,7 @@
               <img class="active" :src="playing ? Pause : PlayIdle" alt="">
             </div>
           </div>
-          <div class="next">
+          <div class="next" @click="playNext">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24"
                  height="24"
             >
@@ -148,7 +151,7 @@
 
 <script>
 import { props } from '../../utils/vue';
-import { escapeShortcut, fetchFile, } from '../../services/fs';
+import { escapeShortcut, fetchFile, readDirectory, } from '../../services/fs';
 import { createFFmpeg } from '@ffmpeg/ffmpeg';
 import PlayNormal from '../../assets/icons/media-player/play-normal.png';
 import PlayIdle from '../../assets/icons/media-player/play-idle.png';
@@ -159,7 +162,8 @@ import Pause from '../../assets/icons/media-player/pause.png';
 import debounce from 'lodash.debounce';
 import { parseBuffer as metaDataParseBuffer } from 'music-metadata';
 import { formatSeconds } from '../../utils/utils';
-import {basename} from 'path-browserify'
+import { basename, dirname } from 'path-browserify';
+import { getFileType } from '../../services/apps';
 
 const ffmpeg = createFFmpeg({ log: false });
 
@@ -179,7 +183,7 @@ export default {
       src: null,
       currentFile: this.filePath,
       loading: true,
-      images: [],
+      siblings: [],
       imageHasListener: false,
       PlayNormal,
       PlayIdle,
@@ -201,6 +205,7 @@ export default {
       title: '',
       album: '',
       debouncedResize: debounce(this.onContainerResize, 250),
+      fileType: '',
     };
   },
   async created() {
@@ -210,10 +215,20 @@ export default {
     };
   },
   methods: {
-    onEnd() {
-
+    playNext() {
+      if (this.nextFile) {
+        this.currentFile = this.nextFile;
+        this.fetchMediaFile()
+      }
+    },
+    playPrev() {
+      if (this.prevFile) {
+        this.currentFile = this.prevFile;
+        this.fetchMediaFile();
+      }
     },
     async fetchMediaFile() {
+      this.fileType = getFileType(this.currentFile);
       if (true) {
         this.loading = true;
         this.src = null;
@@ -238,6 +253,7 @@ export default {
           this.loading = false;
         }
       }
+      this.fetchSiblingFiles();
     },
     initMedia() {
       this.volume = this.$refs.audio.volume;
@@ -284,6 +300,7 @@ export default {
       }
     },
     async getMetaData(buffer) {
+      //todo figure out what to do with videos?!
       const data = await metaDataParseBuffer(new Uint8Array(buffer));
       const common = data.common || {};
       const pictures = common.picture || [];
@@ -349,6 +366,16 @@ export default {
         c += ' w-large ';
       }
       return c;
+    },
+    async fetchSiblingFiles() {
+      const files = await readDirectory(dirname(this.filePath));
+      this.siblings = [];
+      for (let file of files) {
+        const type = await getFileType(file);
+        if (['audio','video'].includes(type)) {
+          this.siblings.push(file);
+        }
+      }
     }
   },
   style({ className }) {
@@ -361,6 +388,26 @@ export default {
     ];
   },
   computed: {
+    indexInSiblings() {
+      let current = this.currentFile;
+      return this.siblings.findIndex(f => basename(f) === basename(current));
+    },
+    nextFile() {
+      if (!this.siblings || !this.siblings.length) return null;
+      if (this.indexInSiblings !== this.siblings.length - 1) {
+        return this.siblings[this.indexInSiblings + 1];
+      } else {
+        return this.siblings[0];
+      }
+    },
+    prevFile() {
+      if (!this.siblings || !this.siblings.length) return null;
+      if (this.indexInSiblings !== 0) {
+        return this.siblings[this.indexInSiblings - 1];
+      } else {
+        return this.siblings[this.siblings.length - 1];
+      }
+    },
     durationSeconds() {
       return this.$refs.audio.duration;
     },
@@ -384,6 +431,7 @@ export default {
 </script>
 <style lang="scss">
 .MediaPlayer {
+  background-color: black;
   position: relative;
   color: white;
   background-position: center;
@@ -417,12 +465,26 @@ export default {
       max-height: 100%;
       min-width: 300px;
       min-height: 300px;
+
+      &.video{
+        display: none;
+      }
     }
 
+
     video {
-      display: none;
-      background: red;
       width: 100%;
+      max-width: 100%;
+      height: auto;
+      max-height: 100%;
+
+      &.audio{
+        display: none;
+      }
+
+      &.video{
+        display: block;
+      }
     }
   }
 

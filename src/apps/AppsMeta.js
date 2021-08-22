@@ -12,6 +12,7 @@ import driveIcon from '../assets/icons/drive.png?url';
 import folderIcon from '../assets/icons/folder.png?url';
 import icon from '../assets/icons/background-capplet.png';
 import photoViewer from '../assets/icons/jpg.png';
+import VideoGenericIcon from '../assets/icons/video.png?url';
 import { getFileType } from '../services/apps';
 import { basename } from 'path-browserify';
 import { parseBuffer as metaDataParseBuffer } from 'music-metadata/lib/core';
@@ -52,7 +53,7 @@ export default {
     },
     thumbnail:async function (file) {
       const fileType = getFileType(file);
-      if (['audio','video'].includes(fileType)) {
+      if (['audio'/*,'video'*/].includes(fileType)) {
         try {
           const path = await escapeShortcut(file);
           const buffer = await fetchFile(path, { encode: 'unit8array' });
@@ -66,6 +67,9 @@ export default {
         } catch (e) {
           console.error(e);
         }
+      }
+      if(fileType === 'video'){
+        return VideoGenericIcon;
       }
       return AudioFileIcon;
     }
