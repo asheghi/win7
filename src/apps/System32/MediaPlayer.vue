@@ -419,19 +419,23 @@ export default {
       };
       this.$refs.wrapper.onkeydown = onkeydown;
 
-      this.$refs.wrapper.addEventListener('dragover',(e) => {
+      this.$refs.wrapper.addEventListener('dragover', (e) => {
         e.preventDefault();
-      },{ capture: true})
+      }, { capture: true });
 
-      this.$refs.wrapper.addEventListener('drop',(e) => {
+      this.$refs.wrapper.addEventListener('drop', (e) => {
         e.preventDefault();
         const userData = event.dataTransfer.getData('text');
         if (userData) {
-          const [first] = JSON.parse(userData);
-          this.callbacks.openFile(first);
+          const [first] = JSON.parse(userData).filter(it => {
+            const fileType = getFileType(it);
+            return ['audio', 'video'].includes(fileType);
+          });
+          if (first) {
+            this.callbacks.openFile(first);
+          }
         }
-      },{capture:true})
-
+      }, { capture: true });
     },
     toggleFullscreen() {
       this.fullScreen = !Boolean(this.fullScreen);
